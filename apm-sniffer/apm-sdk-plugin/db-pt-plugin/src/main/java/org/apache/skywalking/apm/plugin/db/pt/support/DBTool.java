@@ -1,13 +1,19 @@
 package org.apache.skywalking.apm.plugin.db.pt.support;
 
 import com.alibaba.druid.DbType;
+import org.apache.skywalking.apm.plugin.db.pt.DatabasePTPluginConfig;
 import org.apache.skywalking.apm.util.StringUtil;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author lijian
  * @since 2021/12/30
  */
 public final class DBTool {
+
+    private static volatile Map<String, String> WHITE_LIST_TABLE_MAP;
 
     /**
      * get dbType from jdbc url
@@ -40,6 +46,32 @@ public final class DBTool {
         } else {
             return null;
         }
+    }
+
+    /**
+     * judge the table exists in the table's white list
+     * @param tableName name of the table
+     * @return exists in the table's while list
+     */
+    public static boolean whiteListExists(String tableName) {
+        if (StringUtil.isEmpty(tableName)) {
+            return false;
+        }
+
+        // if map not init, do init
+        if (WHITE_LIST_TABLE_MAP == null) {
+            synchronized (DBTool.class) {
+                if (WHITE_LIST_TABLE_MAP == null) {
+                    WHITE_LIST_TABLE_MAP = new HashMap<>();
+                    if (!StringUtil.isEmpty(DatabasePTPluginConfig.Plugin.DBPT.WHITE_LIST_TABLES)) {
+                        for (String tName : DatabasePTPluginConfig.Plugin.DBPT.WHITE_LIST_TABLES.split(",")) {
+                            WHITE_LIST_TABLE_MAP.put(tName.toLowerCase(), tName.toLowerCase());
+                        }
+                    }
+                }
+            }
+        }
+        return WHITE_LIST_TABLE_MAP.containsKey(tableName.toLowerCase());
     }
 
 }

@@ -35,6 +35,7 @@ public class DatabasePTPluginConfig {
             public static String SHADOW_DB_URL;
             public static String SHADOW_DB_USER_NAME;
             public static String SHADOW_DB_PASSWORD;
+            public static String WHITE_LIST_TABLES;
         }
     }
 }

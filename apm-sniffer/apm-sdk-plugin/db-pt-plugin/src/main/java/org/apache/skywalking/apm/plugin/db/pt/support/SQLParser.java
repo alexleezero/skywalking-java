@@ -83,8 +83,11 @@ public class SQLParser {
                     SQLTableSource from = queryBlock.getFrom();
                     SQLExprTableSource sqlExprTableSource = (SQLExprTableSource) from;
                     SQLIdentifierExpr expr = (SQLIdentifierExpr) sqlExprTableSource.getExpr();
-                    if (!expr.getName().contains(SHADOW_TABLE_SUFFIX)) {
-                        expr.setName(expr.getName() + SHADOW_TABLE_SUFFIX);
+                    // white list judgement
+                    if (DBTool.whiteListExists(expr.getName())) {
+                        if (!expr.getName().contains(SHADOW_TABLE_SUFFIX)) {
+                            expr.setName(expr.getName() + SHADOW_TABLE_SUFFIX);
+                        }
                     }
                     return super.visit(x);
                 }
@@ -95,8 +98,11 @@ public class SQLParser {
 
     private static void alterTableName(SQLExprTableSource tableSource) {
         SQLIdentifierExpr expr = (SQLIdentifierExpr) tableSource.getExpr();
-        if (!expr.getName().endsWith(SHADOW_TABLE_SUFFIX)) {
-            expr.setName(expr.getName() + SHADOW_TABLE_SUFFIX);
+        // white list judgement
+        if (DBTool.whiteListExists(expr.getName())) {
+            if (!expr.getName().endsWith(SHADOW_TABLE_SUFFIX)) {
+                expr.setName(expr.getName() + SHADOW_TABLE_SUFFIX);
+            }
         }
     }
 

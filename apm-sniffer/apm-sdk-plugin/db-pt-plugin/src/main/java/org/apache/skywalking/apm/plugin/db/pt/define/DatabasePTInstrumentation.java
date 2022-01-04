@@ -46,7 +46,16 @@ public class DatabasePTInstrumentation extends ClassStaticMethodsEnhancePluginDe
                 new StaticMethodsInterceptPoint() {
                     @Override
                     public ElementMatcher<MethodDescription> getMethodsMatcher() {
-                        return ElementMatchers.named("getConnection");
+//                        ElementMatcher.Junction<MethodDescription> matchMethod1 = ElementMatchers.takesArguments(3)
+//                                .and(ElementMatchers.takesArguments(String.class, String.class, String.class));
+//                        ElementMatcher.Junction<MethodDescription> matchMethod2 = ElementMatchers.takesArguments(1)
+//                                .and(ElementMatchers.takesArguments(String.class));
+//                        ElementMatcher.Junction<MethodDescription> matchMethod3 = ElementMatchers.takesArguments(2)
+//                                .and(ElementMatchers.takesArguments(String.class, Properties.class));
+//                        return ElementMatchers.named("getConnection")
+//                                        .and(ElementMatchers.isPublic())
+//                                .and(matchMethod1.or(matchMethod2).or(matchMethod3));
+                        return ElementMatchers.named("getConnection").and(ElementMatchers.isPrivate());
                     }
 
                     @Override
@@ -60,5 +69,10 @@ public class DatabasePTInstrumentation extends ClassStaticMethodsEnhancePluginDe
                     }
                 }
         };
+    }
+
+    @Override
+    public boolean isBootstrapInstrumentation() {
+        return true;
     }
 }
