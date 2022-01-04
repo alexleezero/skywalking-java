@@ -30,7 +30,7 @@ public class DatabasePTPluginConfig {
 
         @PluginConfig(root = DatabasePTPluginConfig.class)
         public static class DBPT {
-            public static ShadowMode shadowMode = ShadowMode.TABLE;
+            public static ShadowMode SHADOW_MODE = ShadowMode.TABLE;
             public static String SHADOW_TABLE_SUFFIX = "_shadow";
             public static String SHADOW_DB_URL;
             public static String SHADOW_DB_USER_NAME;

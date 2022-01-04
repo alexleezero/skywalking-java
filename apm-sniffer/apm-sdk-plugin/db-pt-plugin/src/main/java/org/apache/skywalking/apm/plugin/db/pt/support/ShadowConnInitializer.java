@@ -35,7 +35,7 @@ public class ShadowConnInitializer {
     private volatile static Connection shadowConn;
 
     public static Connection getShadowConn() {
-        if (DatabasePTPluginConfig.Plugin.DBPT.shadowMode == ShadowMode.TABLE) {
+        if (DatabasePTPluginConfig.Plugin.DBPT.SHADOW_MODE == ShadowMode.TABLE) {
             return null;
         }
         if (shadowConn == null) {

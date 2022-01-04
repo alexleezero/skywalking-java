@@ -6,6 +6,7 @@ import org.apache.skywalking.apm.agent.core.context.CorrelationContext;
 import java.util.Optional;
 
 /**
+ * Pressure test context
  * @author lijian
  * @since 2021/12/30
  */

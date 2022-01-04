@@ -116,6 +116,7 @@
         <module>servlet-pt-plugin</module>
         <module>db-pt-plugin</module>
         <module>pt-commons</module>
+        <module>lettuce-5.x-pt-plugin</module>
     </modules>
     <packaging>pom</packaging>
 
