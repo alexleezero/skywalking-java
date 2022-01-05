@@ -15,3 +15,7 @@
 # limitations under the License.
 
 lettuce-pt-5.x=org.apache.skywalking.apm.plugin.lettuce.pt.v5.define.LettucePTInstrumentation
+lettuce-pt-5.x=org.apache.skywalking.apm.plugin.lettuce.pt.v5.define.StandaloneConnPTInstrumentation
+lettuce-pt-5.x=org.apache.skywalking.apm.plugin.lettuce.pt.v5.define.SentinelConnPTInstrumentation
+lettuce-pt-5.x=org.apache.skywalking.apm.plugin.lettuce.pt.v5.define.ClusterConnPTInstrumentation
+lettuce-pt-5.x=org.apache.skywalking.apm.plugin.lettuce.pt.v5.define.ClusterPubSubConnPTInstrumentation

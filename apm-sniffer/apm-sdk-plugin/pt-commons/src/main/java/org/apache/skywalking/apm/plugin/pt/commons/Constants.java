@@ -14,4 +14,6 @@ public class Constants {
      * the span name of pressure test
      */
     public static final String PT_SPAN_NAME = "pressure-test";
+
+    public static final String DEFAULT_SHADOW_SUFFIX = "_shadow";
 }

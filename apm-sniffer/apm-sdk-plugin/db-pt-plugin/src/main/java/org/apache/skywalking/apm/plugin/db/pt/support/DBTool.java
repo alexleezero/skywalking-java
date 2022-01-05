@@ -1,11 +1,13 @@
 package org.apache.skywalking.apm.plugin.db.pt.support;
 
 import com.alibaba.druid.DbType;
-import org.apache.skywalking.apm.plugin.db.pt.DatabasePTPluginConfig;
+import org.apache.skywalking.apm.plugin.pt.commons.util.StrUtil;
 import org.apache.skywalking.apm.util.StringUtil;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.skywalking.apm.plugin.db.pt.DatabasePTPluginConfig.Plugin.DBPT.WHITE_LIST_TABLES;
 
 /**
  * @author lijian
@@ -13,7 +15,7 @@ import java.util.Map;
  */
 public final class DBTool {
 
-    private static volatile Map<String, String> WHITE_LIST_TABLE_MAP;
+    private static volatile List<String> TABLE_WHITE_LIST;
 
     /**
      * get dbType from jdbc url
@@ -58,20 +60,31 @@ public final class DBTool {
             return false;
         }
 
-        // if map not init, do init
-        if (WHITE_LIST_TABLE_MAP == null) {
+        // if list not init, do init
+        initList();
+
+        for (String tNameWildcard : TABLE_WHITE_LIST) {
+            boolean matches = StrUtil.wildcardMatch(tNameWildcard, tableName);
+            if (matches) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void initList() {
+        if (TABLE_WHITE_LIST == null) {
             synchronized (DBTool.class) {
-                if (WHITE_LIST_TABLE_MAP == null) {
-                    WHITE_LIST_TABLE_MAP = new HashMap<>();
-                    if (!StringUtil.isEmpty(DatabasePTPluginConfig.Plugin.DBPT.WHITE_LIST_TABLES)) {
-                        for (String tName : DatabasePTPluginConfig.Plugin.DBPT.WHITE_LIST_TABLES.split(",")) {
-                            WHITE_LIST_TABLE_MAP.put(tName.toLowerCase(), tName.toLowerCase());
+                if (TABLE_WHITE_LIST == null) {
+                    TABLE_WHITE_LIST = new ArrayList<>();
+                    if (!StringUtil.isEmpty(WHITE_LIST_TABLES)) {
+                        for (String tName : WHITE_LIST_TABLES.split(",")) {
+                            TABLE_WHITE_LIST.add(tName.toLowerCase());
                         }
                     }
                 }
             }
         }
-        return WHITE_LIST_TABLE_MAP.containsKey(tableName.toLowerCase());
     }
 
 }

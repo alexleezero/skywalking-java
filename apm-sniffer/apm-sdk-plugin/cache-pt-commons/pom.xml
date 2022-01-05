@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>lettuce-5.x-pt-plugin</artifactId>
+    <artifactId>cache-pt-commons</artifactId>
 
     <properties>
         <lettuce-core.version>5.3.0.RELEASE</lettuce-core.version>
@@ -17,20 +17,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.lettuce</groupId>
-            <artifactId>lettuce-core</artifactId>
-            <version>${lettuce-core.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.skywalking</groupId>
             <artifactId>pt-commons</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.skywalking</groupId>
-            <artifactId>cache-pt-commons</artifactId>
-            <version>${project.parent.version}</version>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>${lettuce-core.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

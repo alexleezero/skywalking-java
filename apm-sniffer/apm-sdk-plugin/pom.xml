@@ -117,6 +117,7 @@
         <module>db-pt-plugin</module>
         <module>pt-commons</module>
         <module>lettuce-5.x-pt-plugin</module>
+        <module>cache-pt-commons</module>
     </modules>
     <packaging>pom</packaging>
 
