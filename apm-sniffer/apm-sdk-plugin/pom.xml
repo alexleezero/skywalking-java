@@ -118,6 +118,7 @@
         <module>pt-commons</module>
         <module>lettuce-5.x-pt-plugin</module>
         <module>cache-pt-commons</module>
+        <module>jedis-pt-plugin</module>
     </modules>
     <packaging>pom</packaging>
 

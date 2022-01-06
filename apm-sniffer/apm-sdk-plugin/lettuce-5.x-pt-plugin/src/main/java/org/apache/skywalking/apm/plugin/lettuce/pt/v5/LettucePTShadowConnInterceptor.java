@@ -3,7 +3,7 @@ package org.apache.skywalking.apm.plugin.lettuce.pt.v5;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceMethodsAroundInterceptor;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
-import org.apache.skywalking.apm.plugin.lettuce.pt.v5.common.RedisToolManager;
+import org.apache.skywalking.apm.plugin.lettuce.pt.v5.common.LettuceTool;
 import org.apache.skywalking.apm.plugin.pt.commons.PressureTestContext;
 import org.apache.skywalking.apm.plugin.pt.commons.enums.CacheShadowMode;
 
@@ -20,7 +20,7 @@ public class LettucePTShadowConnInterceptor implements InstanceMethodsAroundInte
         if (PressureTestContext.isTest() &&
                 LettucePTPluginConfig.Plugin.LettucePT.CACHE_SHADOW_MODE == CacheShadowMode.SHADOW_DB) {
             // replace original redis connection
-            allArguments[1] = RedisToolManager.LETTUCE_TOOL.createShadowRedisURI();
+            allArguments[1] = LettuceTool.createShadowRedisURI();
         }
     }
 

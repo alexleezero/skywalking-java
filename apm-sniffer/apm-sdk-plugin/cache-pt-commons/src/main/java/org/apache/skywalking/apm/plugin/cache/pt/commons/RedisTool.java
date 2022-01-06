@@ -1,15 +1,15 @@
 package org.apache.skywalking.apm.plugin.cache.pt.commons;
 
-import io.lettuce.core.RedisURI;
 import org.apache.skywalking.apm.plugin.pt.commons.enums.RedisConnMode;
-import org.apache.skywalking.apm.plugin.pt.commons.exception.ConfigItemErrorException;
 import org.apache.skywalking.apm.plugin.pt.commons.exception.ConfigItemNotFoundException;
 import org.apache.skywalking.apm.plugin.pt.commons.util.StrUtil;
 import org.apache.skywalking.apm.util.StringUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author lijian
@@ -24,6 +24,7 @@ public final class RedisTool {
     private String shadowDBPUrl;
     private String shadowDBPassword;
     private volatile List<String> whiteKeyList;
+    private volatile Set<RedisUrl> redisUrls;
 
     private RedisTool() {}
 
@@ -71,19 +72,6 @@ public final class RedisTool {
 
     public static RedisToolBuilder builder() {
         return new RedisToolBuilder(new RedisTool());
-    }
-
-    public RedisURI createShadowRedisURI() {
-        checkRedisConnConf();
-        if (redisConnMode == RedisConnMode.STANDALONE) {
-            return buildStandaloneClient();
-        } else if (redisConnMode == RedisConnMode.SENTINEL) {
-            return buildSentinelClient();
-        } else if (redisConnMode == RedisConnMode.CLUSTER) {
-            return buildClusterClient();
-        } else {
-            throw new ConfigItemErrorException("redis shadow mode item config error, please check it!");
-        }
     }
 
     public <K> K convertShadowKey(K key) {
@@ -136,9 +124,58 @@ public final class RedisTool {
         return false;
     }
 
+    public Set<RedisUrl> getRedisUrls() {
+        // if not init, do init
+        initShadowRedisUrl();
+
+        return redisUrls;
+    }
+
+
+    public static class RedisUrl {
+        private final String host;
+        private final Integer port;
+
+        public RedisUrl(String host, Integer port) {
+            this.host = host;
+            this.port = port;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+    }
+
+
+    // ~~~ inner methods
+
+    private void initShadowRedisUrl() {
+        if (redisUrls == null) {
+            synchronized (this) {
+                if (redisUrls == null) {
+                    redisUrls = new HashSet<>();
+                    if (StringUtil.isEmpty(shadowDBPUrl)) {
+                        throw new ConfigItemNotFoundException("SHADOW_DB_URL not config");
+                    }
+                    String[] urls = shadowDBPUrl.split(",");
+                    for (String url : urls) {
+                        String[] split = url.split(":");
+                        String host = split[0];
+                        Integer port = split.length == 2 ? Integer.parseInt(split[1]) : 6379;
+                        redisUrls.add(new RedisUrl(host, port));
+                    }
+                }
+            }
+        }
+    }
+
     private void initList() {
         if (whiteKeyList == null) {
-            synchronized (RedisTool.class) {
+            synchronized (this) {
                 if (whiteKeyList == null) {
                     whiteKeyList = new ArrayList<>();
                     if (!StringUtil.isEmpty(whiteKeys)) {
@@ -149,76 +186,6 @@ public final class RedisTool {
                 }
             }
         }
-    }
-
-
-    // ~~~ inner methods
-
-    private RedisURI buildClusterClient() {
-        RedisURI.Builder builder = RedisURI.builder().withPassword(shadowDBPassword);
-        String[] uris = shadowDBPUrl.split(",");
-        for (String uri : uris) {
-            String[] split = uri.split(":");
-            if (split.length != 2) {
-                throw new ConfigItemErrorException("SHADOW_DB_URL config item is error, please check it!");
-            }
-            String host = split[0];
-            int port = Integer.parseInt(split[1]);
-            builder.withHost(host).withPort(port);
-        }
-        return builder.build();
-    }
-
-    private RedisURI buildSentinelClient() {
-        RedisURI.Builder builder = RedisURI.builder();
-        checkRedisSentinelConnConf();
-        builder.withSentinelMasterId(shadowDBSentinelMasterId);
-        String[] uris = shadowDBPUrl.split(",");
-        for (String uri : uris) {
-            String[] split = uri.split(":");
-            if (split.length != 2) {
-                throw new ConfigItemErrorException("SHADOW_DB_URL config item is error, please check it!");
-            }
-            String host = split[0];
-            int port = Integer.parseInt(split[1]);
-            builder.withSentinel(host, port);
-        }
-        builder.withPassword(shadowDBPassword);
-        return builder.build();
-    }
-
-    private RedisURI buildStandaloneClient() {
-        Object[] shadowDBConnInfo = getRedisHostAndPort();
-        String host = (String) shadowDBConnInfo[0];
-        Integer port = (Integer) shadowDBConnInfo[1];
-        return RedisURI.builder().withPassword(shadowDBPassword)
-                .withHost(host).withPort(port).build();
-    }
-
-    private void checkRedisConnConf() {
-        if (StringUtil.isEmpty(shadowDBPUrl)) {
-            throw new ConfigItemNotFoundException("SHADOW_DB_URL not config");
-        }
-    }
-
-    private void checkRedisSentinelConnConf() {
-        if (StringUtil.isEmpty(shadowDBSentinelMasterId)) {
-            throw new ConfigItemNotFoundException("redis sentinel mode: SHADOW_DB_SENTINEL_MASTER_ID not config");
-        }
-    }
-
-    private Object[] getRedisHostAndPort() {
-        Object[] hostAndPort = new Object[2];
-        if (shadowDBPUrl.contains(":")) {
-            String[] split = shadowDBPUrl.split(":");
-            hostAndPort[0] = split[0];
-            hostAndPort[1] = split[1];
-        } else {
-            hostAndPort[0] = shadowDBPUrl;
-            // default redis port
-            hostAndPort[1] = 6379;
-        }
-        return hostAndPort;
     }
 
 }
