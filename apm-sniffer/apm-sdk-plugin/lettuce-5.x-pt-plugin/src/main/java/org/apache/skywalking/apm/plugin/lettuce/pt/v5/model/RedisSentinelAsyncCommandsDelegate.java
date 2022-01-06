@@ -7,6 +7,7 @@ import io.lettuce.core.protocol.CommandArgs;
 import io.lettuce.core.protocol.ProtocolKeyword;
 import io.lettuce.core.sentinel.api.StatefulRedisSentinelConnection;
 import io.lettuce.core.sentinel.api.async.RedisSentinelAsyncCommands;
+import org.apache.skywalking.apm.plugin.lettuce.pt.v5.common.RedisToolManager;
 
 import java.net.SocketAddress;
 import java.util.List;
@@ -25,7 +26,7 @@ public class RedisSentinelAsyncCommandsDelegate<K, V> implements RedisSentinelAs
 
     @Override
     public RedisFuture<SocketAddress> getMasterAddrByName(K key) {
-        return origin.getMasterAddrByName(key);
+        return origin.getMasterAddrByName(RedisToolManager.LETTUCE_TOOL.convertShadowKey(key));
     }
 
     @Override
@@ -35,37 +36,37 @@ public class RedisSentinelAsyncCommandsDelegate<K, V> implements RedisSentinelAs
 
     @Override
     public RedisFuture<Map<K, V>> master(K key) {
-        return origin.master(key);
+        return origin.master(RedisToolManager.LETTUCE_TOOL.convertShadowKey(key));
     }
 
     @Override
     public RedisFuture<List<Map<K, V>>> slaves(K key) {
-        return origin.slaves(key);
+        return origin.slaves(RedisToolManager.LETTUCE_TOOL.convertShadowKey(key));
     }
 
     @Override
     public RedisFuture<Long> reset(K key) {
-        return origin.reset(key);
+        return origin.reset(RedisToolManager.LETTUCE_TOOL.convertShadowKey(key));
     }
 
     @Override
     public RedisFuture<String> failover(K key) {
-        return origin.failover(key);
+        return origin.failover(RedisToolManager.LETTUCE_TOOL.convertShadowKey(key));
     }
 
     @Override
     public RedisFuture<String> monitor(K key, String ip, int port, int quorum) {
-        return origin.monitor(key, ip, port, quorum);
+        return origin.monitor(RedisToolManager.LETTUCE_TOOL.convertShadowKey(key), ip, port, quorum);
     }
 
     @Override
     public RedisFuture<String> set(K key, String option, V value) {
-        return origin.set(key, option, value);
+        return origin.set(RedisToolManager.LETTUCE_TOOL.convertShadowKey(key), option, value);
     }
 
     @Override
     public RedisFuture<String> remove(K key) {
-        return origin.remove(key);
+        return origin.remove(RedisToolManager.LETTUCE_TOOL.convertShadowKey(key));
     }
 
     @Override

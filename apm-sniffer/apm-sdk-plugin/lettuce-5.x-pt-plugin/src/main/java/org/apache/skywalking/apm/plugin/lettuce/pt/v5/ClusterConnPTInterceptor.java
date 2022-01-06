@@ -1,5 +1,8 @@
 package org.apache.skywalking.apm.plugin.lettuce.pt.v5;
 
+import io.lettuce.core.cluster.api.async.RedisAdvancedClusterAsyncCommands;
+import io.lettuce.core.cluster.api.reactive.RedisAdvancedClusterReactiveCommands;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceMethodsAroundInterceptor;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
@@ -25,11 +28,11 @@ public class ClusterConnPTInterceptor implements InstanceMethodsAroundIntercepto
     public Object afterMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Object ret) throws Throwable {
         if (PressureTestContext.isTest()) {
             if (method.getName().equals("sync")) {
-                   return new RedisAdvancedClusterCommandsDelegate((RedisAdvancedClusterCommandsDelegate) ret);
+                   return new RedisAdvancedClusterCommandsDelegate((RedisAdvancedClusterCommands) ret);
             } else if (method.getName().equals("async")) {
-                return new RedisAdvancedClusterAsyncCommandsDelegate((RedisAdvancedClusterAsyncCommandsDelegate) ret);
+                return new RedisAdvancedClusterAsyncCommandsDelegate((RedisAdvancedClusterAsyncCommands) ret);
             } else if (method.getName().equals("reactive")) {
-                return new RedisAdvancedClusterReactiveCommandsDelegate((RedisAdvancedClusterReactiveCommandsDelegate) ret);
+                return new RedisAdvancedClusterReactiveCommandsDelegate((RedisAdvancedClusterReactiveCommands) ret);
             }
         }
         return ret;

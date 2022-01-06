@@ -2110,8 +2110,4 @@ public class RedisCommandsDelegate<K, V> implements RedisCommands<K, V> {
         return origin.unwatch();
     }
 
-
-    // ~~~ inner methods
-
-
 }

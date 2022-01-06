@@ -1,5 +1,8 @@
 package org.apache.skywalking.apm.plugin.lettuce.pt.v5;
 
+import io.lettuce.core.sentinel.api.async.RedisSentinelAsyncCommands;
+import io.lettuce.core.sentinel.api.reactive.RedisSentinelReactiveCommands;
+import io.lettuce.core.sentinel.api.sync.RedisSentinelCommands;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedInstance;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceMethodsAroundInterceptor;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
@@ -25,11 +28,11 @@ public class SentinelConnPTInterceptor implements InstanceMethodsAroundIntercept
     public Object afterMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Object ret) throws Throwable {
         if (PressureTestContext.isTest()) {
             if (method.getName().equals("sync")) {
-                   return new RedisSentinelCommandsDelegate((RedisSentinelCommandsDelegate) ret);
+                   return new RedisSentinelCommandsDelegate((RedisSentinelCommands) ret);
             } else if (method.getName().equals("async")) {
-                return new RedisSentinelAsyncCommandsDelegate((RedisSentinelAsyncCommandsDelegate) ret);
+                return new RedisSentinelAsyncCommandsDelegate((RedisSentinelAsyncCommands) ret);
             } else if (method.getName().equals("reactive")) {
-                return new RedisSentinelReactiveCommandsDelegate((RedisSentinelReactiveCommandsDelegate) ret);
+                return new RedisSentinelReactiveCommandsDelegate((RedisSentinelReactiveCommands) ret);
             }
         }
         return ret;
