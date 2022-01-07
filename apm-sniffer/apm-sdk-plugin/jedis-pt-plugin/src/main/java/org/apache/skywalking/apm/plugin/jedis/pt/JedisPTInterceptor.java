@@ -6,14 +6,10 @@ import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInt
 import org.apache.skywalking.apm.plugin.jedis.pt.common.JedisTool;
 import org.apache.skywalking.apm.plugin.pt.commons.PressureTestContext;
 import org.apache.skywalking.apm.plugin.pt.commons.enums.CacheShadowMode;
-import org.apache.skywalking.apm.plugin.pt.commons.enums.RedisConnMode;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 import java.lang.reflect.Method;
 
 import static org.apache.skywalking.apm.plugin.jedis.pt.JedisPTPluginConfig.Plugin.JedisPT.CACHE_SHADOW_MODE;
-import static org.apache.skywalking.apm.plugin.jedis.pt.JedisPTPluginConfig.Plugin.JedisPT.CONN_MODE;
 
 /**
  * @author lijian
@@ -25,16 +21,9 @@ public class JedisPTInterceptor implements InstanceMethodsAroundInterceptor {
 	public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, MethodInterceptResult result) throws Throwable {
 		if (PressureTestContext.isTest()) {
 			if (CACHE_SHADOW_MODE == CacheShadowMode.SHADOW_DB) {
-				JedisTool.checkRedisConnConf();
-				if (CONN_MODE == RedisConnMode.STANDALONE) {
-					JedisPool shadowJedisPool = JedisTool.getShadowJedisPool();
-					try (Jedis jedis = shadowJedisPool.getResource()) {
-						// todo reflect the same method and set the result
-					}
-				} else if (CONN_MODE == RedisConnMode.SENTINEL) {
-
-				} else if (CONN_MODE == RedisConnMode.CLUSTER) {
-
+				JedisTool.InvokeResp invokeResp = JedisTool.executeByShadowDB(method, allArguments, argumentsTypes);
+				if (invokeResp.isSuccess()) {
+					result.defineReturnValue(invokeResp.getResponse());
 				}
 			} else if (CACHE_SHADOW_MODE == CacheShadowMode.SHADOW_KEY) {
 				// judge the arguments, to convert the key to shadow key
@@ -55,4 +44,6 @@ public class JedisPTInterceptor implements InstanceMethodsAroundInterceptor {
 	public void handleMethodException(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Throwable t) {
 
 	}
+
+
 }

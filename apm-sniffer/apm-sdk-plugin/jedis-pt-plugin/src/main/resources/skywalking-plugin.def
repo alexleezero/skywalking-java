@@ -15,5 +15,6 @@
 # limitations under the License.
 
 jedis-pt=org.apache.skywalking.apm.plugin.jedis.pt.define.JedisPTInstrumentation
+jedis-pt=org.apache.skywalking.apm.plugin.jedis.pt.define.JedisClusterPTInstrumentation
 
 

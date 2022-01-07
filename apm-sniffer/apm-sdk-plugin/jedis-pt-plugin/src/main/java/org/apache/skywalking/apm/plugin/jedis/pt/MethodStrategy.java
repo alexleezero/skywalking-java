@@ -10,5 +10,4 @@ public interface MethodStrategy {
 
 	Class<?>[] getArgumentsTypes();
 
-	MethodStrategy[] strategies();
 }
