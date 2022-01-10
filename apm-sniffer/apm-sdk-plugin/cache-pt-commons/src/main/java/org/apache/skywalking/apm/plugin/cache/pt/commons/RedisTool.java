@@ -84,10 +84,12 @@ public final class RedisTool {
             }
             boolean exists = whiteKeyExists(strKey);
             if (exists) {
-                if (key instanceof String) {
-                    return (K) (strKey + shadowKeySuffix);
-                } else {
-                    return (K) (strKey + shadowKeySuffix).getBytes(StandardCharsets.UTF_8);
+                if (!strKey.endsWith(shadowKeySuffix)) {
+                    if (key instanceof String) {
+                        return (K) (strKey + shadowKeySuffix);
+                    } else {
+                        return (K) (strKey + shadowKeySuffix).getBytes(StandardCharsets.UTF_8);
+                    }
                 }
             }
         }

@@ -1,50 +1,35 @@
 package org.apache.skywalking.apm.plugin.jedis.pt;
 
-import redis.clients.jedis.AccessControlUser;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.BitOP;
-import redis.clients.jedis.BitPosParams;
-import redis.clients.jedis.Client;
-import redis.clients.jedis.ClusterReset;
-import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisMonitor;
-import redis.clients.jedis.JedisPoolAbstract;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisClusterHostAndPortMap;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.Module;
-import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.StreamConsumersInfo;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.StreamGroupInfo;
-import redis.clients.jedis.StreamInfo;
 import redis.clients.jedis.StreamPendingEntry;
-import redis.clients.jedis.Transaction;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.util.Slowlog;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,91 +38,118 @@ import java.util.Set;
  * @author lijian
  * @since 2022/1/7
  */
-public class CopyJedis extends Jedis {
+public class CopyJedis extends JedisCluster {
 
-	public CopyJedis() {
-		super();
+	public CopyJedis(HostAndPort node) {
+		super(node);
 	}
 
-	public CopyJedis(String host) {
-		super(host);
+	public CopyJedis(HostAndPort node, int timeout) {
+		super(node, timeout);
 	}
 
-	public CopyJedis(HostAndPort hp) {
-		super(hp);
+	public CopyJedis(HostAndPort node, int timeout, int maxAttempts) {
+		super(node, timeout, maxAttempts);
 	}
 
-	public CopyJedis(String host, int port) {
-		super(host, port);
+	public CopyJedis(HostAndPort node, GenericObjectPoolConfig poolConfig) {
+		super(node, poolConfig);
 	}
 
-	public CopyJedis(String host, int port, boolean ssl) {
-		super(host, port, ssl);
+	public CopyJedis(HostAndPort node, int timeout, GenericObjectPoolConfig poolConfig) {
+		super(node, timeout, poolConfig);
 	}
 
-	public CopyJedis(String host, int port, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-		super(host, port, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+	public CopyJedis(HostAndPort node, int timeout, int maxAttempts, GenericObjectPoolConfig poolConfig) {
+		super(node, timeout, maxAttempts, poolConfig);
 	}
 
-	public CopyJedis(String host, int port, int timeout) {
-		super(host, port, timeout);
+	public CopyJedis(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts, GenericObjectPoolConfig poolConfig) {
+		super(node, connectionTimeout, soTimeout, maxAttempts, poolConfig);
 	}
 
-	public CopyJedis(String host, int port, int timeout, boolean ssl) {
-		super(host, port, timeout, ssl);
+	public CopyJedis(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts, String password, GenericObjectPoolConfig poolConfig) {
+		super(node, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
 	}
 
-	public CopyJedis(String host, int port, int timeout, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-		super(host, port, timeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+	public CopyJedis(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts, String password, String clientName, GenericObjectPoolConfig poolConfig) {
+		super(node, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
 	}
 
-	public CopyJedis(String host, int port, int connectionTimeout, int soTimeout) {
-		super(host, port, connectionTimeout, soTimeout);
+	public CopyJedis(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig) {
+		super(node, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig);
 	}
 
-	public CopyJedis(String host, int port, int connectionTimeout, int soTimeout, boolean ssl) {
-		super(host, port, connectionTimeout, soTimeout, ssl);
+	public CopyJedis(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts, String password, String clientName, GenericObjectPoolConfig poolConfig, boolean ssl) {
+		super(node, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, ssl);
 	}
 
-	public CopyJedis(String host, int port, int connectionTimeout, int soTimeout, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-		super(host, port, connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+	public CopyJedis(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig, boolean ssl) {
+		super(node, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig, ssl);
 	}
 
-	public CopyJedis(JedisShardInfo shardInfo) {
-		super(shardInfo);
+	public CopyJedis(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts, String password, String clientName, GenericObjectPoolConfig poolConfig, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
+		super(node, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
 	}
 
-	public CopyJedis(URI uri) {
-		super(uri);
+	public CopyJedis(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
+		super(node, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
 	}
 
-	public CopyJedis(URI uri, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-		super(uri, sslSocketFactory, sslParameters, hostnameVerifier);
+	public CopyJedis(Set<HostAndPort> nodes) {
+		super(nodes);
 	}
 
-	public CopyJedis(URI uri, int timeout) {
-		super(uri, timeout);
+	public CopyJedis(Set<HostAndPort> nodes, int timeout) {
+		super(nodes, timeout);
 	}
 
-	public CopyJedis(URI uri, int timeout, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-		super(uri, timeout, sslSocketFactory, sslParameters, hostnameVerifier);
+	public CopyJedis(Set<HostAndPort> nodes, int timeout, int maxAttempts) {
+		super(nodes, timeout, maxAttempts);
 	}
 
-	public CopyJedis(URI uri, int connectionTimeout, int soTimeout) {
-		super(uri, connectionTimeout, soTimeout);
+	public CopyJedis(Set<HostAndPort> nodes, GenericObjectPoolConfig poolConfig) {
+		super(nodes, poolConfig);
 	}
 
-	public CopyJedis(URI uri, int connectionTimeout, int soTimeout, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-		super(uri, connectionTimeout, soTimeout, sslSocketFactory, sslParameters, hostnameVerifier);
+	public CopyJedis(Set<HostAndPort> nodes, int timeout, GenericObjectPoolConfig poolConfig) {
+		super(nodes, timeout, poolConfig);
 	}
 
-	public CopyJedis(JedisSocketFactory jedisSocketFactory) {
-		super(jedisSocketFactory);
+	public CopyJedis(Set<HostAndPort> jedisClusterNode, int timeout, int maxAttempts, GenericObjectPoolConfig poolConfig) {
+		super(jedisClusterNode, timeout, maxAttempts, poolConfig);
 	}
 
-	@Override
-	public String ping(String message) {
-		return super.ping(message);
+	public CopyJedis(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, GenericObjectPoolConfig poolConfig) {
+		super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, poolConfig);
+	}
+
+	public CopyJedis(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String password, GenericObjectPoolConfig poolConfig) {
+		super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, poolConfig);
+	}
+
+	public CopyJedis(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String password, String clientName, GenericObjectPoolConfig poolConfig) {
+		super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig);
+	}
+
+	public CopyJedis(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig) {
+		super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig);
+	}
+
+	public CopyJedis(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String password, String clientName, GenericObjectPoolConfig poolConfig, boolean ssl) {
+		super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, ssl);
+	}
+
+	public CopyJedis(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig, boolean ssl) {
+		super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig, ssl);
+	}
+
+	public CopyJedis(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String password, String clientName, GenericObjectPoolConfig poolConfig, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
+		super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
+	}
+
+	public CopyJedis(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout, int maxAttempts, String user, String password, String clientName, GenericObjectPoolConfig poolConfig, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier, JedisClusterHostAndPortMap hostAndPortMap) {
+		super(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, user, password, clientName, poolConfig, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
 	}
 
 	@Override
@@ -156,33 +168,18 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long exists(String... keys) {
-		return super.exists(keys);
-	}
-
-	@Override
 	public Boolean exists(String key) {
 		return super.exists(key);
 	}
 
 	@Override
-	public Long del(String... keys) {
-		return super.del(keys);
+	public Long exists(String... keys) {
+		return super.exists(keys);
 	}
 
 	@Override
-	public Long del(String key) {
-		return super.del(key);
-	}
-
-	@Override
-	public Long unlink(String... keys) {
-		return super.unlink(keys);
-	}
-
-	@Override
-	public Long unlink(String key) {
-		return super.unlink(key);
+	public Long persist(String key) {
+		return super.persist(key);
 	}
 
 	@Override
@@ -191,23 +188,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Set<String> keys(String pattern) {
-		return super.keys(pattern);
+	public byte[] dump(String key) {
+		return super.dump(key);
 	}
 
 	@Override
-	public String randomKey() {
-		return super.randomKey();
-	}
-
-	@Override
-	public String rename(String oldkey, String newkey) {
-		return super.rename(oldkey, newkey);
-	}
-
-	@Override
-	public Long renamenx(String oldkey, String newkey) {
-		return super.renamenx(oldkey, newkey);
+	public String restore(String key, int ttl, byte[] serializedValue) {
+		return super.restore(key, ttl, serializedValue);
 	}
 
 	@Override
@@ -216,8 +203,18 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
+	public Long pexpire(String key, long milliseconds) {
+		return super.pexpire(key, milliseconds);
+	}
+
+	@Override
 	public Long expireAt(String key, long unixTime) {
 		return super.expireAt(key, unixTime);
+	}
+
+	@Override
+	public Long pexpireAt(String key, long millisecondsTimestamp) {
+		return super.pexpireAt(key, millisecondsTimestamp);
 	}
 
 	@Override
@@ -226,8 +223,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long touch(String... keys) {
-		return super.touch(keys);
+	public Long pttl(String key) {
+		return super.pttl(key);
 	}
 
 	@Override
@@ -236,18 +233,38 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long move(String key, int dbIndex) {
-		return super.move(key, dbIndex);
+	public Long touch(String... keys) {
+		return super.touch(keys);
+	}
+
+	@Override
+	public Boolean setbit(String key, long offset, boolean value) {
+		return super.setbit(key, offset, value);
+	}
+
+	@Override
+	public Boolean setbit(String key, long offset, String value) {
+		return super.setbit(key, offset, value);
+	}
+
+	@Override
+	public Boolean getbit(String key, long offset) {
+		return super.getbit(key, offset);
+	}
+
+	@Override
+	public Long setrange(String key, long offset, String value) {
+		return super.setrange(key, offset, value);
+	}
+
+	@Override
+	public String getrange(String key, long startOffset, long endOffset) {
+		return super.getrange(key, startOffset, endOffset);
 	}
 
 	@Override
 	public String getSet(String key, String value) {
 		return super.getSet(key, value);
-	}
-
-	@Override
-	public List<String> mget(String... keys) {
-		return super.mget(keys);
 	}
 
 	@Override
@@ -261,13 +278,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public String mset(String... keysvalues) {
-		return super.mset(keysvalues);
-	}
-
-	@Override
-	public Long msetnx(String... keysvalues) {
-		return super.msetnx(keysvalues);
+	public String psetex(String key, long milliseconds, String value) {
+		return super.psetex(key, milliseconds, value);
 	}
 
 	@Override
@@ -341,18 +353,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Double hincrByFloat(String key, String field, double value) {
-		return super.hincrByFloat(key, field, value);
-	}
-
-	@Override
 	public Boolean hexists(String key, String field) {
 		return super.hexists(key, field);
 	}
 
 	@Override
-	public Long hdel(String key, String... fields) {
-		return super.hdel(key, fields);
+	public Long hdel(String key, String... field) {
+		return super.hdel(key, field);
 	}
 
 	@Override
@@ -376,13 +383,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long rpush(String key, String... strings) {
-		return super.rpush(key, strings);
+	public Long rpush(String key, String... string) {
+		return super.rpush(key, string);
 	}
 
 	@Override
-	public Long lpush(String key, String... strings) {
-		return super.lpush(key, strings);
+	public Long lpush(String key, String... string) {
+		return super.lpush(key, string);
 	}
 
 	@Override
@@ -426,13 +433,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public String rpoplpush(String srckey, String dstkey) {
-		return super.rpoplpush(srckey, dstkey);
-	}
-
-	@Override
-	public Long sadd(String key, String... members) {
-		return super.sadd(key, members);
+	public Long sadd(String key, String... member) {
+		return super.sadd(key, member);
 	}
 
 	@Override
@@ -441,8 +443,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long srem(String key, String... members) {
-		return super.srem(key, members);
+	public Long srem(String key, String... member) {
+		return super.srem(key, member);
 	}
 
 	@Override
@@ -456,11 +458,6 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long smove(String srckey, String dstkey, String member) {
-		return super.smove(srckey, dstkey, member);
-	}
-
-	@Override
 	public Long scard(String key) {
 		return super.scard(key);
 	}
@@ -471,36 +468,6 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Set<String> sinter(String... keys) {
-		return super.sinter(keys);
-	}
-
-	@Override
-	public Long sinterstore(String dstkey, String... keys) {
-		return super.sinterstore(dstkey, keys);
-	}
-
-	@Override
-	public Set<String> sunion(String... keys) {
-		return super.sunion(keys);
-	}
-
-	@Override
-	public Long sunionstore(String dstkey, String... keys) {
-		return super.sunionstore(dstkey, keys);
-	}
-
-	@Override
-	public Set<String> sdiff(String... keys) {
-		return super.sdiff(keys);
-	}
-
-	@Override
-	public Long sdiffstore(String dstkey, String... keys) {
-		return super.sdiffstore(dstkey, keys);
-	}
-
-	@Override
 	public String srandmember(String key) {
 		return super.srandmember(key);
 	}
@@ -508,6 +475,11 @@ public class CopyJedis extends Jedis {
 	@Override
 	public List<String> srandmember(String key, int count) {
 		return super.srandmember(key, count);
+	}
+
+	@Override
+	public Long strlen(String key) {
+		return super.strlen(key);
 	}
 
 	@Override
@@ -606,11 +578,6 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public String watch(String... keys) {
-		return super.watch(keys);
-	}
-
-	@Override
 	public List<String> sort(String key) {
 		return super.sort(key);
 	}
@@ -618,36 +585,6 @@ public class CopyJedis extends Jedis {
 	@Override
 	public List<String> sort(String key, SortingParams sortingParameters) {
 		return super.sort(key, sortingParameters);
-	}
-
-	@Override
-	public List<String> blpop(int timeout, String... keys) {
-		return super.blpop(timeout, keys);
-	}
-
-	@Override
-	public List<String> blpop(String... args) {
-		return super.blpop(args);
-	}
-
-	@Override
-	public List<String> brpop(String... args) {
-		return super.brpop(args);
-	}
-
-	@Override
-	public Long sort(String key, SortingParams sortingParameters, String dstkey) {
-		return super.sort(key, sortingParameters, dstkey);
-	}
-
-	@Override
-	public Long sort(String key, String dstkey) {
-		return super.sort(key, dstkey);
-	}
-
-	@Override
-	public List<String> brpop(int timeout, String... keys) {
-		return super.brpop(timeout, keys);
 	}
 
 	@Override
@@ -671,38 +608,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Set<String> zrangeByScore(String key, double min, double max, int offset, int count) {
-		return super.zrangeByScore(key, min, max, offset, count);
-	}
-
-	@Override
-	public Set<String> zrangeByScore(String key, String min, String max, int offset, int count) {
-		return super.zrangeByScore(key, min, max, offset, count);
-	}
-
-	@Override
-	public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
-		return super.zrangeByScoreWithScores(key, min, max);
-	}
-
-	@Override
-	public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max) {
-		return super.zrangeByScoreWithScores(key, min, max);
-	}
-
-	@Override
-	public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
-		return super.zrangeByScoreWithScores(key, min, max, offset, count);
-	}
-
-	@Override
-	public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
-		return super.zrangeByScoreWithScores(key, min, max, offset, count);
-	}
-
-	@Override
 	public Set<String> zrevrangeByScore(String key, double max, double min) {
 		return super.zrevrangeByScore(key, max, min);
+	}
+
+	@Override
+	public Set<String> zrangeByScore(String key, double min, double max, int offset, int count) {
+		return super.zrangeByScore(key, min, max, offset, count);
 	}
 
 	@Override
@@ -711,13 +623,48 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
+	public Set<String> zrangeByScore(String key, String min, String max, int offset, int count) {
+		return super.zrangeByScore(key, min, max, offset, count);
+	}
+
+	@Override
 	public Set<String> zrevrangeByScore(String key, double max, double min, int offset, int count) {
 		return super.zrevrangeByScore(key, max, min, offset, count);
 	}
 
 	@Override
+	public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
+		return super.zrangeByScoreWithScores(key, min, max);
+	}
+
+	@Override
 	public Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min) {
 		return super.zrevrangeByScoreWithScores(key, max, min);
+	}
+
+	@Override
+	public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
+		return super.zrangeByScoreWithScores(key, min, max, offset, count);
+	}
+
+	@Override
+	public Set<String> zrevrangeByScore(String key, String max, String min, int offset, int count) {
+		return super.zrevrangeByScore(key, max, min, offset, count);
+	}
+
+	@Override
+	public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max) {
+		return super.zrangeByScoreWithScores(key, min, max);
+	}
+
+	@Override
+	public Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min) {
+		return super.zrevrangeByScoreWithScores(key, max, min);
+	}
+
+	@Override
+	public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
+		return super.zrangeByScoreWithScores(key, min, max, offset, count);
 	}
 
 	@Override
@@ -728,16 +675,6 @@ public class CopyJedis extends Jedis {
 	@Override
 	public Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
 		return super.zrevrangeByScoreWithScores(key, max, min, offset, count);
-	}
-
-	@Override
-	public Set<String> zrevrangeByScore(String key, String max, String min, int offset, int count) {
-		return super.zrevrangeByScore(key, max, min, offset, count);
-	}
-
-	@Override
-	public Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min) {
-		return super.zrevrangeByScoreWithScores(key, max, min);
 	}
 
 	@Override
@@ -753,26 +690,6 @@ public class CopyJedis extends Jedis {
 	@Override
 	public Long zremrangeByScore(String key, String min, String max) {
 		return super.zremrangeByScore(key, min, max);
-	}
-
-	@Override
-	public Long zunionstore(String dstkey, String... sets) {
-		return super.zunionstore(dstkey, sets);
-	}
-
-	@Override
-	public Long zunionstore(String dstkey, ZParams params, String... sets) {
-		return super.zunionstore(dstkey, params, sets);
-	}
-
-	@Override
-	public Long zinterstore(String dstkey, String... sets) {
-		return super.zinterstore(dstkey, sets);
-	}
-
-	@Override
-	public Long zinterstore(String dstkey, ZParams params, String... sets) {
-		return super.zinterstore(dstkey, params, sets);
 	}
 
 	@Override
@@ -806,8 +723,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long strlen(String key) {
-		return super.strlen(key);
+	public Long linsert(String key, ListPosition where, String pivot, String value) {
+		return super.linsert(key, where, pivot, value);
 	}
 
 	@Override
@@ -816,168 +733,28 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long persist(String key) {
-		return super.persist(key);
-	}
-
-	@Override
 	public Long rpushx(String key, String... string) {
 		return super.rpushx(key, string);
 	}
 
 	@Override
+	public Long del(String key) {
+		return super.del(key);
+	}
+
+	@Override
+	public Long unlink(String key) {
+		return super.unlink(key);
+	}
+
+	@Override
+	public Long unlink(String... keys) {
+		return super.unlink(keys);
+	}
+
+	@Override
 	public String echo(String string) {
 		return super.echo(string);
-	}
-
-	@Override
-	public Long linsert(String key, ListPosition where, String pivot, String value) {
-		return super.linsert(key, where, pivot, value);
-	}
-
-	@Override
-	public String brpoplpush(String source, String destination, int timeout) {
-		return super.brpoplpush(source, destination, timeout);
-	}
-
-	@Override
-	public Boolean setbit(String key, long offset, boolean value) {
-		return super.setbit(key, offset, value);
-	}
-
-	@Override
-	public Boolean setbit(String key, long offset, String value) {
-		return super.setbit(key, offset, value);
-	}
-
-	@Override
-	public Boolean getbit(String key, long offset) {
-		return super.getbit(key, offset);
-	}
-
-	@Override
-	public Long setrange(String key, long offset, String value) {
-		return super.setrange(key, offset, value);
-	}
-
-	@Override
-	public String getrange(String key, long startOffset, long endOffset) {
-		return super.getrange(key, startOffset, endOffset);
-	}
-
-	@Override
-	public Long bitpos(String key, boolean value) {
-		return super.bitpos(key, value);
-	}
-
-	@Override
-	public Long bitpos(String key, boolean value, BitPosParams params) {
-		return super.bitpos(key, value, params);
-	}
-
-	@Override
-	public List<String> configGet(String pattern) {
-		return super.configGet(pattern);
-	}
-
-	@Override
-	public String configSet(String parameter, String value) {
-		return super.configSet(parameter, value);
-	}
-
-	@Override
-	public void subscribe(JedisPubSub jedisPubSub, String... channels) {
-		super.subscribe(jedisPubSub, channels);
-	}
-
-	@Override
-	public Long publish(String channel, String message) {
-		return super.publish(channel, message);
-	}
-
-	@Override
-	public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
-		super.psubscribe(jedisPubSub, patterns);
-	}
-
-	@Override
-	public Object eval(String script, int keyCount, String... params) {
-		return super.eval(script, keyCount, params);
-	}
-
-	@Override
-	public Object eval(String script, List<String> keys, List<String> args) {
-		return super.eval(script, keys, args);
-	}
-
-	@Override
-	public Object eval(String script) {
-		return super.eval(script);
-	}
-
-	@Override
-	public Object evalsha(String sha1) {
-		return super.evalsha(sha1);
-	}
-
-	@Override
-	public Object evalsha(String sha1, List<String> keys, List<String> args) {
-		return super.evalsha(sha1, keys, args);
-	}
-
-	@Override
-	public Object evalsha(String sha1, int keyCount, String... params) {
-		return super.evalsha(sha1, keyCount, params);
-	}
-
-	@Override
-	public Boolean scriptExists(String sha1) {
-		return super.scriptExists(sha1);
-	}
-
-	@Override
-	public List<Boolean> scriptExists(String... sha1) {
-		return super.scriptExists(sha1);
-	}
-
-	@Override
-	public String scriptLoad(String script) {
-		return super.scriptLoad(script);
-	}
-
-	@Override
-	public List<Slowlog> slowlogGet() {
-		return super.slowlogGet();
-	}
-
-	@Override
-	public List<Slowlog> slowlogGet(long entries) {
-		return super.slowlogGet(entries);
-	}
-
-	@Override
-	public Long objectRefcount(String key) {
-		return super.objectRefcount(key);
-	}
-
-	@Override
-	public String objectEncoding(String key) {
-		return super.objectEncoding(key);
-	}
-
-	@Override
-	public Long objectIdletime(String key) {
-		return super.objectIdletime(key);
-	}
-
-	@Override
-	public List<String> objectHelp() {
-		return super.objectHelp();
-	}
-
-	@Override
-	public Long objectFreq(String key) {
-		return super.objectFreq(key);
 	}
 
 	@Override
@@ -991,118 +768,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long bitop(BitOP op, String destKey, String... srcKeys) {
-		return super.bitop(op, destKey, srcKeys);
-	}
-
-	@Override
-	public List<Map<String, String>> sentinelMasters() {
-		return super.sentinelMasters();
-	}
-
-	@Override
-	public List<String> sentinelGetMasterAddrByName(String masterName) {
-		return super.sentinelGetMasterAddrByName(masterName);
-	}
-
-	@Override
-	public Long sentinelReset(String pattern) {
-		return super.sentinelReset(pattern);
-	}
-
-	@Override
-	public List<Map<String, String>> sentinelSlaves(String masterName) {
-		return super.sentinelSlaves(masterName);
-	}
-
-	@Override
-	public String sentinelFailover(String masterName) {
-		return super.sentinelFailover(masterName);
-	}
-
-	@Override
-	public String sentinelMonitor(String masterName, String ip, int port, int quorum) {
-		return super.sentinelMonitor(masterName, ip, port, quorum);
-	}
-
-	@Override
-	public String sentinelRemove(String masterName) {
-		return super.sentinelRemove(masterName);
-	}
-
-	@Override
-	public String sentinelSet(String masterName, Map<String, String> parameterMap) {
-		return super.sentinelSet(masterName, parameterMap);
-	}
-
-	@Override
-	public byte[] dump(String key) {
-		return super.dump(key);
-	}
-
-	@Override
-	public String restore(String key, int ttl, byte[] serializedValue) {
-		return super.restore(key, ttl, serializedValue);
-	}
-
-	@Override
-	public String restoreReplace(String key, int ttl, byte[] serializedValue) {
-		return super.restoreReplace(key, ttl, serializedValue);
-	}
-
-	@Override
-	public Long pexpire(String key, long milliseconds) {
-		return super.pexpire(key, milliseconds);
-	}
-
-	@Override
-	public Long pexpireAt(String key, long millisecondsTimestamp) {
-		return super.pexpireAt(key, millisecondsTimestamp);
-	}
-
-	@Override
-	public Long pttl(String key) {
-		return super.pttl(key);
-	}
-
-	@Override
-	public String psetex(String key, long milliseconds, String value) {
-		return super.psetex(key, milliseconds, value);
-	}
-
-	@Override
-	public String clientKill(String ipPort) {
-		return super.clientKill(ipPort);
-	}
-
-	@Override
-	public String clientGetname() {
-		return super.clientGetname();
-	}
-
-	@Override
-	public String clientList() {
-		return super.clientList();
-	}
-
-	@Override
-	public String clientSetname(String name) {
-		return super.clientSetname(name);
-	}
-
-	@Override
-	public String migrate(String host, int port, String key, int destinationDb, int timeout) {
-		return super.migrate(host, port, key, destinationDb, timeout);
-	}
-
-	@Override
-	public String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys) {
-		return super.migrate(host, port, destinationDB, timeout, params, keys);
-	}
-
-	@Override
-	public ScanResult<String> scan(String cursor) {
-		return super.scan(cursor);
+	public Set<String> keys(String pattern) {
+		return super.keys(pattern);
 	}
 
 	@Override
@@ -1116,163 +783,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params) {
-		return super.hscan(key, cursor, params);
-	}
-
-	@Override
 	public ScanResult<String> sscan(String key, String cursor) {
 		return super.sscan(key, cursor);
 	}
 
 	@Override
-	public ScanResult<String> sscan(String key, String cursor, ScanParams params) {
-		return super.sscan(key, cursor, params);
-	}
-
-	@Override
 	public ScanResult<Tuple> zscan(String key, String cursor) {
 		return super.zscan(key, cursor);
-	}
-
-	@Override
-	public ScanResult<Tuple> zscan(String key, String cursor, ScanParams params) {
-		return super.zscan(key, cursor, params);
-	}
-
-	@Override
-	public String clusterNodes() {
-		return super.clusterNodes();
-	}
-
-	@Override
-	public String readonly() {
-		return super.readonly();
-	}
-
-	@Override
-	public String clusterMeet(String ip, int port) {
-		return super.clusterMeet(ip, port);
-	}
-
-	@Override
-	public String clusterReset(ClusterReset resetType) {
-		return super.clusterReset(resetType);
-	}
-
-	@Override
-	public String clusterAddSlots(int... slots) {
-		return super.clusterAddSlots(slots);
-	}
-
-	@Override
-	public String clusterDelSlots(int... slots) {
-		return super.clusterDelSlots(slots);
-	}
-
-	@Override
-	public String clusterInfo() {
-		return super.clusterInfo();
-	}
-
-	@Override
-	public List<String> clusterGetKeysInSlot(int slot, int count) {
-		return super.clusterGetKeysInSlot(slot, count);
-	}
-
-	@Override
-	public String clusterSetSlotNode(int slot, String nodeId) {
-		return super.clusterSetSlotNode(slot, nodeId);
-	}
-
-	@Override
-	public String clusterSetSlotMigrating(int slot, String nodeId) {
-		return super.clusterSetSlotMigrating(slot, nodeId);
-	}
-
-	@Override
-	public String clusterSetSlotImporting(int slot, String nodeId) {
-		return super.clusterSetSlotImporting(slot, nodeId);
-	}
-
-	@Override
-	public String clusterSetSlotStable(int slot) {
-		return super.clusterSetSlotStable(slot);
-	}
-
-	@Override
-	public String clusterForget(String nodeId) {
-		return super.clusterForget(nodeId);
-	}
-
-	@Override
-	public String clusterFlushSlots() {
-		return super.clusterFlushSlots();
-	}
-
-	@Override
-	public Long clusterKeySlot(String key) {
-		return super.clusterKeySlot(key);
-	}
-
-	@Override
-	public Long clusterCountKeysInSlot(int slot) {
-		return super.clusterCountKeysInSlot(slot);
-	}
-
-	@Override
-	public String clusterSaveConfig() {
-		return super.clusterSaveConfig();
-	}
-
-	@Override
-	public String clusterReplicate(String nodeId) {
-		return super.clusterReplicate(nodeId);
-	}
-
-	@Override
-	public List<String> clusterSlaves(String nodeId) {
-		return super.clusterSlaves(nodeId);
-	}
-
-	@Override
-	public String clusterFailover() {
-		return super.clusterFailover();
-	}
-
-	@Override
-	public List<Object> clusterSlots() {
-		return super.clusterSlots();
-	}
-
-	@Override
-	public String asking() {
-		return super.asking();
-	}
-
-	@Override
-	public List<String> pubsubChannels(String pattern) {
-		return super.pubsubChannels(pattern);
-	}
-
-	@Override
-	public Long pubsubNumPat() {
-		return super.pubsubNumPat();
-	}
-
-	@Override
-	public Map<String, String> pubsubNumSub(String... channels) {
-		return super.pubsubNumSub(channels);
-	}
-
-	@Override
-	public void close() {
-		super.close();
-	}
-
-	@Override
-	public void setDataSource(JedisPoolAbstract jedisPool) {
-		super.setDataSource(jedisPool);
 	}
 
 	@Override
@@ -1286,8 +803,148 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public long pfcount(String... keys) {
-		return super.pfcount(keys);
+	public List<String> blpop(int timeout, String key) {
+		return super.blpop(timeout, key);
+	}
+
+	@Override
+	public List<String> brpop(int timeout, String key) {
+		return super.brpop(timeout, key);
+	}
+
+	@Override
+	public Long del(String... keys) {
+		return super.del(keys);
+	}
+
+	@Override
+	public List<String> blpop(int timeout, String... keys) {
+		return super.blpop(timeout, keys);
+	}
+
+	@Override
+	public List<String> brpop(int timeout, String... keys) {
+		return super.brpop(timeout, keys);
+	}
+
+	@Override
+	public List<String> mget(String... keys) {
+		return super.mget(keys);
+	}
+
+	@Override
+	public String mset(String... keysvalues) {
+		return super.mset(keysvalues);
+	}
+
+	@Override
+	public Long msetnx(String... keysvalues) {
+		return super.msetnx(keysvalues);
+	}
+
+	@Override
+	public String rename(String oldkey, String newkey) {
+		return super.rename(oldkey, newkey);
+	}
+
+	@Override
+	public Long renamenx(String oldkey, String newkey) {
+		return super.renamenx(oldkey, newkey);
+	}
+
+	@Override
+	public String rpoplpush(String srckey, String dstkey) {
+		return super.rpoplpush(srckey, dstkey);
+	}
+
+	@Override
+	public Set<String> sdiff(String... keys) {
+		return super.sdiff(keys);
+	}
+
+	@Override
+	public Long sdiffstore(String dstkey, String... keys) {
+		return super.sdiffstore(dstkey, keys);
+	}
+
+	@Override
+	public Set<String> sinter(String... keys) {
+		return super.sinter(keys);
+	}
+
+	@Override
+	public Long sinterstore(String dstkey, String... keys) {
+		return super.sinterstore(dstkey, keys);
+	}
+
+	@Override
+	public Long smove(String srckey, String dstkey, String member) {
+		return super.smove(srckey, dstkey, member);
+	}
+
+	@Override
+	public Long sort(String key, SortingParams sortingParameters, String dstkey) {
+		return super.sort(key, sortingParameters, dstkey);
+	}
+
+	@Override
+	public Long sort(String key, String dstkey) {
+		return super.sort(key, dstkey);
+	}
+
+	@Override
+	public Set<String> sunion(String... keys) {
+		return super.sunion(keys);
+	}
+
+	@Override
+	public Long sunionstore(String dstkey, String... keys) {
+		return super.sunionstore(dstkey, keys);
+	}
+
+	@Override
+	public Long zinterstore(String dstkey, String... sets) {
+		return super.zinterstore(dstkey, sets);
+	}
+
+	@Override
+	public Long zinterstore(String dstkey, ZParams params, String... sets) {
+		return super.zinterstore(dstkey, params, sets);
+	}
+
+	@Override
+	public Long zunionstore(String dstkey, String... sets) {
+		return super.zunionstore(dstkey, sets);
+	}
+
+	@Override
+	public Long zunionstore(String dstkey, ZParams params, String... sets) {
+		return super.zunionstore(dstkey, params, sets);
+	}
+
+	@Override
+	public String brpoplpush(String source, String destination, int timeout) {
+		return super.brpoplpush(source, destination, timeout);
+	}
+
+	@Override
+	public Long publish(String channel, String message) {
+		return super.publish(channel, message);
+	}
+
+	@Override
+	public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+		super.subscribe(jedisPubSub, channels);
+	}
+
+	@Override
+	public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
+		super.psubscribe(jedisPubSub, patterns);
+	}
+
+	@Override
+	public Long bitop(BitOP op, String destKey, String... srcKeys) {
+		return super.bitop(op, destKey, srcKeys);
 	}
 
 	@Override
@@ -1296,13 +953,63 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public List<String> blpop(int timeout, String key) {
-		return super.blpop(timeout, key);
+	public long pfcount(String... keys) {
+		return super.pfcount(keys);
 	}
 
 	@Override
-	public List<String> brpop(int timeout, String key) {
-		return super.brpop(timeout, key);
+	public Object eval(String script, int keyCount, String... params) {
+		return super.eval(script, keyCount, params);
+	}
+
+	@Override
+	public Object eval(String script, String sampleKey) {
+		return super.eval(script, sampleKey);
+	}
+
+	@Override
+	public Object eval(String script, List<String> keys, List<String> args) {
+		return super.eval(script, keys, args);
+	}
+
+	@Override
+	public Object evalsha(String sha1, int keyCount, String... params) {
+		return super.evalsha(sha1, keyCount, params);
+	}
+
+	@Override
+	public Object evalsha(String sha1, List<String> keys, List<String> args) {
+		return super.evalsha(sha1, keys, args);
+	}
+
+	@Override
+	public Object evalsha(String sha1, String sampleKey) {
+		return super.evalsha(sha1, sampleKey);
+	}
+
+	@Override
+	public Boolean scriptExists(String sha1, String sampleKey) {
+		return super.scriptExists(sha1, sampleKey);
+	}
+
+	@Override
+	public List<Boolean> scriptExists(String sampleKey, String... sha1) {
+		return super.scriptExists(sampleKey, sha1);
+	}
+
+	@Override
+	public String scriptLoad(String script, String sampleKey) {
+		return super.scriptLoad(script, sampleKey);
+	}
+
+	@Override
+	public String scriptFlush(String sampleKey) {
+		return super.scriptFlush(sampleKey);
+	}
+
+	@Override
+	public String scriptKill(String sampleKey) {
+		return super.scriptKill(sampleKey);
 	}
 
 	@Override
@@ -1376,71 +1083,6 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public String moduleLoad(String path) {
-		return super.moduleLoad(path);
-	}
-
-	@Override
-	public String moduleUnload(String name) {
-		return super.moduleUnload(name);
-	}
-
-	@Override
-	public List<Module> moduleList() {
-		return super.moduleList();
-	}
-
-	@Override
-	public String aclSetUser(String name) {
-		return super.aclSetUser(name);
-	}
-
-	@Override
-	public String aclSetUser(String name, String... params) {
-		return super.aclSetUser(name, params);
-	}
-
-	@Override
-	public Long aclDelUser(String name) {
-		return super.aclDelUser(name);
-	}
-
-	@Override
-	public AccessControlUser aclGetUser(String name) {
-		return super.aclGetUser(name);
-	}
-
-	@Override
-	public List<String> aclUsers() {
-		return super.aclUsers();
-	}
-
-	@Override
-	public List<String> aclList() {
-		return super.aclList();
-	}
-
-	@Override
-	public String aclWhoAmI() {
-		return super.aclWhoAmI();
-	}
-
-	@Override
-	public List<String> aclCat() {
-		return super.aclCat();
-	}
-
-	@Override
-	public List<String> aclCat(String category) {
-		return super.aclCat(category);
-	}
-
-	@Override
-	public String aclGenPass() {
-		return super.aclGenPass();
-	}
-
-	@Override
 	public List<Long> bitfield(String key, String... arguments) {
 		return super.bitfield(key, arguments);
 	}
@@ -1453,11 +1095,6 @@ public class CopyJedis extends Jedis {
 	@Override
 	public Long hstrlen(String key, String field) {
 		return super.hstrlen(key, field);
-	}
-
-	@Override
-	public String memoryDoctor() {
-		return super.memoryDoctor();
 	}
 
 	@Override
@@ -1491,7 +1128,7 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public long xack(String key, String group, StreamEntryID... ids) {
+	public Long xack(String key, String group, StreamEntryID... ids) {
 		return super.xack(key, group, ids);
 	}
 
@@ -1506,23 +1143,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public long xgroupDestroy(String key, String groupname) {
+	public Long xgroupDestroy(String key, String groupname) {
 		return super.xgroupDestroy(key, groupname);
 	}
 
 	@Override
-	public Long xgroupDelConsumer(String key, String groupname, String consumerName) {
-		return super.xgroupDelConsumer(key, groupname, consumerName);
-	}
-
-	@Override
-	public long xdel(String key, StreamEntryID... ids) {
-		return super.xdel(key, ids);
-	}
-
-	@Override
-	public long xtrim(String key, long maxLen, boolean approximateLength) {
-		return super.xtrim(key, maxLen, approximateLength);
+	public Long xgroupDelConsumer(String key, String groupname, String consumername) {
+		return super.xgroupDelConsumer(key, groupname, consumername);
 	}
 
 	@Override
@@ -1536,38 +1163,43 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
+	public Long xdel(String key, StreamEntryID... ids) {
+		return super.xdel(key, ids);
+	}
+
+	@Override
+	public Long xtrim(String key, long maxLen, boolean approximateLength) {
+		return super.xtrim(key, maxLen, approximateLength);
+	}
+
+	@Override
 	public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
 		return super.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids);
 	}
 
 	@Override
-	public StreamInfo xinfoStream(String key) {
-		return super.xinfoStream(key);
+	public Long waitReplicas(String key, int replicas, long timeout) {
+		return super.waitReplicas(key, replicas, timeout);
 	}
 
 	@Override
-	public List<StreamGroupInfo> xinfoGroup(String key) {
-		return super.xinfoGroup(key);
+	public Object sendCommand(String sampleKey, ProtocolCommand cmd, String... args) {
+		return super.sendCommand(sampleKey, cmd, args);
 	}
 
 	@Override
-	public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
-		return super.xinfoConsumers(key, group);
+	public void close() {
+		super.close();
 	}
 
 	@Override
-	public Object sendCommand(ProtocolCommand cmd, String... args) {
-		return super.sendCommand(cmd, args);
+	public Map<String, JedisPool> getClusterNodes() {
+		return super.getClusterNodes();
 	}
 
 	@Override
-	public String ping() {
-		return super.ping();
-	}
-
-	@Override
-	public byte[] ping(byte[] message) {
-		return super.ping(message);
+	public Jedis getConnectionFromSlot(int slot) {
+		return super.getConnectionFromSlot(slot);
 	}
 
 	@Override
@@ -1586,11 +1218,6 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public String quit() {
-		return super.quit();
-	}
-
-	@Override
 	public Long exists(byte[]... keys) {
 		return super.exists(keys);
 	}
@@ -1601,23 +1228,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long del(byte[]... keys) {
-		return super.del(keys);
-	}
-
-	@Override
-	public Long del(byte[] key) {
-		return super.del(key);
-	}
-
-	@Override
-	public Long unlink(byte[]... keys) {
-		return super.unlink(keys);
-	}
-
-	@Override
-	public Long unlink(byte[] key) {
-		return super.unlink(key);
+	public Long persist(byte[] key) {
+		return super.persist(key);
 	}
 
 	@Override
@@ -1626,33 +1238,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public String flushDB() {
-		return super.flushDB();
+	public byte[] dump(byte[] key) {
+		return super.dump(key);
 	}
 
 	@Override
-	public Set<byte[]> keys(byte[] pattern) {
-		return super.keys(pattern);
-	}
-
-	@Override
-	public byte[] randomBinaryKey() {
-		return super.randomBinaryKey();
-	}
-
-	@Override
-	public String rename(byte[] oldkey, byte[] newkey) {
-		return super.rename(oldkey, newkey);
-	}
-
-	@Override
-	public Long renamenx(byte[] oldkey, byte[] newkey) {
-		return super.renamenx(oldkey, newkey);
-	}
-
-	@Override
-	public Long dbSize() {
-		return super.dbSize();
+	public String restore(byte[] key, int ttl, byte[] serializedValue) {
+		return super.restore(key, ttl, serializedValue);
 	}
 
 	@Override
@@ -1661,8 +1253,18 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
+	public Long pexpire(byte[] key, long milliseconds) {
+		return super.pexpire(key, milliseconds);
+	}
+
+	@Override
 	public Long expireAt(byte[] key, long unixTime) {
 		return super.expireAt(key, unixTime);
+	}
+
+	@Override
+	public Long pexpireAt(byte[] key, long millisecondsTimestamp) {
+		return super.pexpireAt(key, millisecondsTimestamp);
 	}
 
 	@Override
@@ -1671,8 +1273,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long touch(byte[]... keys) {
-		return super.touch(keys);
+	public Long pttl(byte[] key) {
+		return super.pttl(key);
 	}
 
 	@Override
@@ -1681,23 +1283,33 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public String select(int index) {
-		return super.select(index);
+	public Long touch(byte[]... keys) {
+		return super.touch(keys);
 	}
 
 	@Override
-	public String swapDB(int index1, int index2) {
-		return super.swapDB(index1, index2);
+	public Boolean setbit(byte[] key, long offset, boolean value) {
+		return super.setbit(key, offset, value);
 	}
 
 	@Override
-	public Long move(byte[] key, int dbIndex) {
-		return super.move(key, dbIndex);
+	public Boolean setbit(byte[] key, long offset, byte[] value) {
+		return super.setbit(key, offset, value);
 	}
 
 	@Override
-	public String flushAll() {
-		return super.flushAll();
+	public Boolean getbit(byte[] key, long offset) {
+		return super.getbit(key, offset);
+	}
+
+	@Override
+	public Long setrange(byte[] key, long offset, byte[] value) {
+		return super.setrange(key, offset, value);
+	}
+
+	@Override
+	public byte[] getrange(byte[] key, long startOffset, long endOffset) {
+		return super.getrange(key, startOffset, endOffset);
 	}
 
 	@Override
@@ -1706,28 +1318,18 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public List<byte[]> mget(byte[]... keys) {
-		return super.mget(keys);
-	}
-
-	@Override
 	public Long setnx(byte[] key, byte[] value) {
 		return super.setnx(key, value);
 	}
 
 	@Override
+	public String psetex(byte[] key, long milliseconds, byte[] value) {
+		return super.psetex(key, milliseconds, value);
+	}
+
+	@Override
 	public String setex(byte[] key, int seconds, byte[] value) {
 		return super.setex(key, seconds, value);
-	}
-
-	@Override
-	public String mset(byte[]... keysvalues) {
-		return super.mset(keysvalues);
-	}
-
-	@Override
-	public Long msetnx(byte[]... keysvalues) {
-		return super.msetnx(keysvalues);
 	}
 
 	@Override
@@ -1811,8 +1413,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long hdel(byte[] key, byte[]... fields) {
-		return super.hdel(key, fields);
+	public Long hdel(byte[] key, byte[]... field) {
+		return super.hdel(key, field);
 	}
 
 	@Override
@@ -1836,13 +1438,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long rpush(byte[] key, byte[]... strings) {
-		return super.rpush(key, strings);
+	public Long rpush(byte[] key, byte[]... args) {
+		return super.rpush(key, args);
 	}
 
 	@Override
-	public Long lpush(byte[] key, byte[]... strings) {
-		return super.lpush(key, strings);
+	public Long lpush(byte[] key, byte[]... args) {
+		return super.lpush(key, args);
 	}
 
 	@Override
@@ -1886,13 +1488,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public byte[] rpoplpush(byte[] srckey, byte[] dstkey) {
-		return super.rpoplpush(srckey, dstkey);
-	}
-
-	@Override
-	public Long sadd(byte[] key, byte[]... members) {
-		return super.sadd(key, members);
+	public Long sadd(byte[] key, byte[]... member) {
+		return super.sadd(key, member);
 	}
 
 	@Override
@@ -1916,11 +1513,6 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long smove(byte[] srckey, byte[] dstkey, byte[] member) {
-		return super.smove(srckey, dstkey, member);
-	}
-
-	@Override
 	public Long scard(byte[] key) {
 		return super.scard(key);
 	}
@@ -1931,43 +1523,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Set<byte[]> sinter(byte[]... keys) {
-		return super.sinter(keys);
-	}
-
-	@Override
-	public Long sinterstore(byte[] dstkey, byte[]... keys) {
-		return super.sinterstore(dstkey, keys);
-	}
-
-	@Override
-	public Set<byte[]> sunion(byte[]... keys) {
-		return super.sunion(keys);
-	}
-
-	@Override
-	public Long sunionstore(byte[] dstkey, byte[]... keys) {
-		return super.sunionstore(dstkey, keys);
-	}
-
-	@Override
-	public Set<byte[]> sdiff(byte[]... keys) {
-		return super.sdiff(keys);
-	}
-
-	@Override
-	public Long sdiffstore(byte[] dstkey, byte[]... keys) {
-		return super.sdiffstore(dstkey, keys);
-	}
-
-	@Override
 	public byte[] srandmember(byte[] key) {
 		return super.srandmember(key);
 	}
 
 	@Override
-	public List<byte[]> srandmember(byte[] key, int count) {
-		return super.srandmember(key, count);
+	public Long strlen(byte[] key) {
+		return super.strlen(key);
 	}
 
 	@Override
@@ -2066,41 +1628,6 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Transaction multi() {
-		return super.multi();
-	}
-
-	@Override
-	protected void checkIsInMultiOrPipeline() {
-		super.checkIsInMultiOrPipeline();
-	}
-
-	@Override
-	public void connect() {
-		super.connect();
-	}
-
-	@Override
-	public void disconnect() {
-		super.disconnect();
-	}
-
-	@Override
-	public void resetState() {
-		super.resetState();
-	}
-
-	@Override
-	public String watch(byte[]... keys) {
-		return super.watch(keys);
-	}
-
-	@Override
-	public String unwatch() {
-		return super.unwatch();
-	}
-
-	@Override
 	public List<byte[]> sort(byte[] key) {
 		return super.sort(key);
 	}
@@ -2108,51 +1635,6 @@ public class CopyJedis extends Jedis {
 	@Override
 	public List<byte[]> sort(byte[] key, SortingParams sortingParameters) {
 		return super.sort(key, sortingParameters);
-	}
-
-	@Override
-	public List<byte[]> blpop(int timeout, byte[]... keys) {
-		return super.blpop(timeout, keys);
-	}
-
-	@Override
-	public Long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
-		return super.sort(key, sortingParameters, dstkey);
-	}
-
-	@Override
-	public Long sort(byte[] key, byte[] dstkey) {
-		return super.sort(key, dstkey);
-	}
-
-	@Override
-	public List<byte[]> brpop(int timeout, byte[]... keys) {
-		return super.brpop(timeout, keys);
-	}
-
-	@Override
-	public List<byte[]> blpop(byte[]... args) {
-		return super.blpop(args);
-	}
-
-	@Override
-	public List<byte[]> brpop(byte[]... args) {
-		return super.brpop(args);
-	}
-
-	@Override
-	public String auth(String password) {
-		return super.auth(password);
-	}
-
-	@Override
-	public String auth(String user, String password) {
-		return super.auth(user, password);
-	}
-
-	@Override
-	public Pipeline pipelined() {
-		return super.pipelined();
 	}
 
 	@Override
@@ -2176,43 +1658,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
-		return super.zrangeByScore(key, min, max, offset, count);
-	}
-
-	@Override
-	public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
-		return super.zrangeByScore(key, min, max, offset, count);
-	}
-
-	@Override
-	public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max) {
-		return super.zrangeByScoreWithScores(key, min, max);
-	}
-
-	@Override
-	public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
-		return super.zrangeByScoreWithScores(key, min, max);
-	}
-
-	@Override
-	public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
-		return super.zrangeByScoreWithScores(key, min, max, offset, count);
-	}
-
-	@Override
-	public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
-		return super.zrangeByScoreWithScores(key, min, max, offset, count);
-	}
-
-	@Override
-	protected Set<Tuple> getTupledSet() {
-		return super.getTupledSet();
-	}
-
-	@Override
 	public Set<byte[]> zrevrangeByScore(byte[] key, double max, double min) {
 		return super.zrevrangeByScore(key, max, min);
+	}
+
+	@Override
+	public Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
+		return super.zrangeByScore(key, min, max, offset, count);
 	}
 
 	@Override
@@ -2221,13 +1673,18 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
+	public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
+		return super.zrangeByScore(key, min, max, offset, count);
+	}
+
+	@Override
 	public Set<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
 		return super.zrevrangeByScore(key, max, min, offset, count);
 	}
 
 	@Override
-	public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
-		return super.zrevrangeByScore(key, max, min, offset, count);
+	public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max) {
+		return super.zrangeByScoreWithScores(key, min, max);
 	}
 
 	@Override
@@ -2236,13 +1693,33 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
-		return super.zrevrangeByScoreWithScores(key, max, min, offset, count);
+	public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
+		return super.zrangeByScoreWithScores(key, min, max, offset, count);
+	}
+
+	@Override
+	public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
+		return super.zrevrangeByScore(key, max, min, offset, count);
+	}
+
+	@Override
+	public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
+		return super.zrangeByScoreWithScores(key, min, max);
 	}
 
 	@Override
 	public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
 		return super.zrevrangeByScoreWithScores(key, max, min);
+	}
+
+	@Override
+	public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
+		return super.zrangeByScoreWithScores(key, min, max, offset, count);
+	}
+
+	@Override
+	public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
+		return super.zrevrangeByScoreWithScores(key, max, min, offset, count);
 	}
 
 	@Override
@@ -2266,23 +1743,63 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Long zunionstore(byte[] dstkey, byte[]... sets) {
-		return super.zunionstore(dstkey, sets);
+	public Long linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value) {
+		return super.linsert(key, where, pivot, value);
 	}
 
 	@Override
-	public Long zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
-		return super.zunionstore(dstkey, params, sets);
+	public Long lpushx(byte[] key, byte[]... arg) {
+		return super.lpushx(key, arg);
 	}
 
 	@Override
-	public Long zinterstore(byte[] dstkey, byte[]... sets) {
-		return super.zinterstore(dstkey, sets);
+	public Long rpushx(byte[] key, byte[]... arg) {
+		return super.rpushx(key, arg);
 	}
 
 	@Override
-	public Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
-		return super.zinterstore(dstkey, params, sets);
+	public Long del(byte[] key) {
+		return super.del(key);
+	}
+
+	@Override
+	public Long unlink(byte[] key) {
+		return super.unlink(key);
+	}
+
+	@Override
+	public Long unlink(byte[]... keys) {
+		return super.unlink(keys);
+	}
+
+	@Override
+	public byte[] echo(byte[] arg) {
+		return super.echo(arg);
+	}
+
+	@Override
+	public Long bitcount(byte[] key) {
+		return super.bitcount(key);
+	}
+
+	@Override
+	public Long bitcount(byte[] key, long start, long end) {
+		return super.bitcount(key, start, end);
+	}
+
+	@Override
+	public Long pfadd(byte[] key, byte[]... elements) {
+		return super.pfadd(key, elements);
+	}
+
+	@Override
+	public long pfcount(byte[] key) {
+		return super.pfcount(key);
+	}
+
+	@Override
+	public List<byte[]> srandmember(byte[] key, int count) {
+		return super.srandmember(key, count);
 	}
 
 	@Override
@@ -2316,163 +1833,173 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public String save() {
-		return super.save();
+	public Object eval(byte[] script, byte[] keyCount, byte[]... params) {
+		return super.eval(script, keyCount, params);
 	}
 
 	@Override
-	public String bgsave() {
-		return super.bgsave();
+	public Object eval(byte[] script, int keyCount, byte[]... params) {
+		return super.eval(script, keyCount, params);
 	}
 
 	@Override
-	public String bgrewriteaof() {
-		return super.bgrewriteaof();
+	public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+		return super.eval(script, keys, args);
 	}
 
 	@Override
-	public Long lastsave() {
-		return super.lastsave();
+	public Object eval(byte[] script, byte[] sampleKey) {
+		return super.eval(script, sampleKey);
 	}
 
 	@Override
-	public String shutdown() {
-		return super.shutdown();
+	public Object evalsha(byte[] sha1, byte[] sampleKey) {
+		return super.evalsha(sha1, sampleKey);
 	}
 
 	@Override
-	public String info() {
-		return super.info();
+	public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+		return super.evalsha(sha1, keys, args);
 	}
 
 	@Override
-	public String info(String section) {
-		return super.info(section);
+	public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
+		return super.evalsha(sha1, keyCount, params);
 	}
 
 	@Override
-	public void monitor(JedisMonitor jedisMonitor) {
-		super.monitor(jedisMonitor);
+	public List<Long> scriptExists(byte[] sampleKey, byte[]... sha1) {
+		return super.scriptExists(sampleKey, sha1);
 	}
 
 	@Override
-	public String slaveof(String host, int port) {
-		return super.slaveof(host, port);
+	public byte[] scriptLoad(byte[] script, byte[] sampleKey) {
+		return super.scriptLoad(script, sampleKey);
 	}
 
 	@Override
-	public String slaveofNoOne() {
-		return super.slaveofNoOne();
+	public String scriptFlush(byte[] sampleKey) {
+		return super.scriptFlush(sampleKey);
 	}
 
 	@Override
-	public List<byte[]> configGet(byte[] pattern) {
-		return super.configGet(pattern);
+	public String scriptKill(byte[] sampleKey) {
+		return super.scriptKill(sampleKey);
 	}
 
 	@Override
-	public String configResetStat() {
-		return super.configResetStat();
+	public Long del(byte[]... keys) {
+		return super.del(keys);
 	}
 
 	@Override
-	public String configRewrite() {
-		return super.configRewrite();
+	public List<byte[]> blpop(int timeout, byte[]... keys) {
+		return super.blpop(timeout, keys);
 	}
 
 	@Override
-	public byte[] configSet(byte[] parameter, byte[] value) {
-		return super.configSet(parameter, value);
+	public List<byte[]> brpop(int timeout, byte[]... keys) {
+		return super.brpop(timeout, keys);
 	}
 
 	@Override
-	public boolean isConnected() {
-		return super.isConnected();
+	public List<byte[]> mget(byte[]... keys) {
+		return super.mget(keys);
 	}
 
 	@Override
-	public Long strlen(byte[] key) {
-		return super.strlen(key);
+	public String mset(byte[]... keysvalues) {
+		return super.mset(keysvalues);
 	}
 
 	@Override
-	public void sync() {
-		super.sync();
+	public Long msetnx(byte[]... keysvalues) {
+		return super.msetnx(keysvalues);
 	}
 
 	@Override
-	public Long lpushx(byte[] key, byte[]... string) {
-		return super.lpushx(key, string);
+	public String rename(byte[] oldkey, byte[] newkey) {
+		return super.rename(oldkey, newkey);
 	}
 
 	@Override
-	public Long persist(byte[] key) {
-		return super.persist(key);
+	public Long renamenx(byte[] oldkey, byte[] newkey) {
+		return super.renamenx(oldkey, newkey);
 	}
 
 	@Override
-	public Long rpushx(byte[] key, byte[]... string) {
-		return super.rpushx(key, string);
+	public byte[] rpoplpush(byte[] srckey, byte[] dstkey) {
+		return super.rpoplpush(srckey, dstkey);
 	}
 
 	@Override
-	public byte[] echo(byte[] string) {
-		return super.echo(string);
+	public Set<byte[]> sdiff(byte[]... keys) {
+		return super.sdiff(keys);
 	}
 
 	@Override
-	public Long linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value) {
-		return super.linsert(key, where, pivot, value);
+	public Long sdiffstore(byte[] dstkey, byte[]... keys) {
+		return super.sdiffstore(dstkey, keys);
 	}
 
 	@Override
-	public String debug(DebugParams params) {
-		return super.debug(params);
+	public Set<byte[]> sinter(byte[]... keys) {
+		return super.sinter(keys);
 	}
 
 	@Override
-	public Client getClient() {
-		return super.getClient();
+	public Long sinterstore(byte[] dstkey, byte[]... keys) {
+		return super.sinterstore(dstkey, keys);
+	}
+
+	@Override
+	public Long smove(byte[] srckey, byte[] dstkey, byte[] member) {
+		return super.smove(srckey, dstkey, member);
+	}
+
+	@Override
+	public Long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
+		return super.sort(key, sortingParameters, dstkey);
+	}
+
+	@Override
+	public Long sort(byte[] key, byte[] dstkey) {
+		return super.sort(key, dstkey);
+	}
+
+	@Override
+	public Set<byte[]> sunion(byte[]... keys) {
+		return super.sunion(keys);
+	}
+
+	@Override
+	public Long sunionstore(byte[] dstkey, byte[]... keys) {
+		return super.sunionstore(dstkey, keys);
+	}
+
+	@Override
+	public Long zinterstore(byte[] dstkey, byte[]... sets) {
+		return super.zinterstore(dstkey, sets);
+	}
+
+	@Override
+	public Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
+		return super.zinterstore(dstkey, params, sets);
+	}
+
+	@Override
+	public Long zunionstore(byte[] dstkey, byte[]... sets) {
+		return super.zunionstore(dstkey, sets);
+	}
+
+	@Override
+	public Long zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
+		return super.zunionstore(dstkey, params, sets);
 	}
 
 	@Override
 	public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
 		return super.brpoplpush(source, destination, timeout);
-	}
-
-	@Override
-	public Boolean setbit(byte[] key, long offset, boolean value) {
-		return super.setbit(key, offset, value);
-	}
-
-	@Override
-	public Boolean setbit(byte[] key, long offset, byte[] value) {
-		return super.setbit(key, offset, value);
-	}
-
-	@Override
-	public Boolean getbit(byte[] key, long offset) {
-		return super.getbit(key, offset);
-	}
-
-	@Override
-	public Long bitpos(byte[] key, boolean value) {
-		return super.bitpos(key, value);
-	}
-
-	@Override
-	public Long bitpos(byte[] key, boolean value, BitPosParams params) {
-		return super.bitpos(key, value, params);
-	}
-
-	@Override
-	public Long setrange(byte[] key, long offset, byte[] value) {
-		return super.setrange(key, offset, value);
-	}
-
-	@Override
-	public byte[] getrange(byte[] key, long startOffset, long endOffset) {
-		return super.getrange(key, startOffset, endOffset);
 	}
 
 	@Override
@@ -2491,283 +2018,8 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public int getDB() {
-		return super.getDB();
-	}
-
-	@Override
-	public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
-		return super.eval(script, keys, args);
-	}
-
-	@Override
-	public Object eval(byte[] script, byte[] keyCount, byte[]... params) {
-		return super.eval(script, keyCount, params);
-	}
-
-	@Override
-	public Object eval(byte[] script, int keyCount, byte[]... params) {
-		return super.eval(script, keyCount, params);
-	}
-
-	@Override
-	public Object eval(byte[] script) {
-		return super.eval(script);
-	}
-
-	@Override
-	public Object evalsha(byte[] sha1) {
-		return super.evalsha(sha1);
-	}
-
-	@Override
-	public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-		return super.evalsha(sha1, keys, args);
-	}
-
-	@Override
-	public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
-		return super.evalsha(sha1, keyCount, params);
-	}
-
-	@Override
-	public String scriptFlush() {
-		return super.scriptFlush();
-	}
-
-	@Override
-	public Long scriptExists(byte[] sha1) {
-		return super.scriptExists(sha1);
-	}
-
-	@Override
-	public List<Long> scriptExists(byte[]... sha1) {
-		return super.scriptExists(sha1);
-	}
-
-	@Override
-	public byte[] scriptLoad(byte[] script) {
-		return super.scriptLoad(script);
-	}
-
-	@Override
-	public String scriptKill() {
-		return super.scriptKill();
-	}
-
-	@Override
-	public String slowlogReset() {
-		return super.slowlogReset();
-	}
-
-	@Override
-	public Long slowlogLen() {
-		return super.slowlogLen();
-	}
-
-	@Override
-	public List<byte[]> slowlogGetBinary() {
-		return super.slowlogGetBinary();
-	}
-
-	@Override
-	public List<byte[]> slowlogGetBinary(long entries) {
-		return super.slowlogGetBinary(entries);
-	}
-
-	@Override
-	public Long objectRefcount(byte[] key) {
-		return super.objectRefcount(key);
-	}
-
-	@Override
-	public byte[] objectEncoding(byte[] key) {
-		return super.objectEncoding(key);
-	}
-
-	@Override
-	public Long objectIdletime(byte[] key) {
-		return super.objectIdletime(key);
-	}
-
-	@Override
-	public List<byte[]> objectHelpBinary() {
-		return super.objectHelpBinary();
-	}
-
-	@Override
-	public Long objectFreq(byte[] key) {
-		return super.objectFreq(key);
-	}
-
-	@Override
-	public Long bitcount(byte[] key) {
-		return super.bitcount(key);
-	}
-
-	@Override
-	public Long bitcount(byte[] key, long start, long end) {
-		return super.bitcount(key, start, end);
-	}
-
-	@Override
 	public Long bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
 		return super.bitop(op, destKey, srcKeys);
-	}
-
-	@Override
-	public byte[] dump(byte[] key) {
-		return super.dump(key);
-	}
-
-	@Override
-	public String restore(byte[] key, int ttl, byte[] serializedValue) {
-		return super.restore(key, ttl, serializedValue);
-	}
-
-	@Override
-	public String restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
-		return super.restoreReplace(key, ttl, serializedValue);
-	}
-
-	@Override
-	public Long pexpire(byte[] key, long milliseconds) {
-		return super.pexpire(key, milliseconds);
-	}
-
-	@Override
-	public Long pexpireAt(byte[] key, long millisecondsTimestamp) {
-		return super.pexpireAt(key, millisecondsTimestamp);
-	}
-
-	@Override
-	public Long pttl(byte[] key) {
-		return super.pttl(key);
-	}
-
-	@Override
-	public String psetex(byte[] key, long milliseconds, byte[] value) {
-		return super.psetex(key, milliseconds, value);
-	}
-
-	@Override
-	public byte[] memoryDoctorBinary() {
-		return super.memoryDoctorBinary();
-	}
-
-	@Override
-	public byte[] aclWhoAmIBinary() {
-		return super.aclWhoAmIBinary();
-	}
-
-	@Override
-	public byte[] aclGenPassBinary() {
-		return super.aclGenPassBinary();
-	}
-
-	@Override
-	public List<byte[]> aclListBinary() {
-		return super.aclListBinary();
-	}
-
-	@Override
-	public List<byte[]> aclUsersBinary() {
-		return super.aclUsersBinary();
-	}
-
-	@Override
-	public AccessControlUser aclGetUser(byte[] name) {
-		return super.aclGetUser(name);
-	}
-
-	@Override
-	public String aclSetUser(byte[] name) {
-		return super.aclSetUser(name);
-	}
-
-	@Override
-	public String aclSetUser(byte[] name, byte[]... keys) {
-		return super.aclSetUser(name, keys);
-	}
-
-	@Override
-	public Long aclDelUser(byte[] name) {
-		return super.aclDelUser(name);
-	}
-
-	@Override
-	public List<byte[]> aclCatBinary() {
-		return super.aclCatBinary();
-	}
-
-	@Override
-	public List<byte[]> aclCat(byte[] category) {
-		return super.aclCat(category);
-	}
-
-	@Override
-	public String clientKill(byte[] ipPort) {
-		return super.clientKill(ipPort);
-	}
-
-	@Override
-	public String clientKill(String ip, int port) {
-		return super.clientKill(ip, port);
-	}
-
-	@Override
-	public Long clientKill(ClientKillParams params) {
-		return super.clientKill(params);
-	}
-
-	@Override
-	public byte[] clientGetnameBinary() {
-		return super.clientGetnameBinary();
-	}
-
-	@Override
-	public byte[] clientListBinary() {
-		return super.clientListBinary();
-	}
-
-	@Override
-	public String clientSetname(byte[] name) {
-		return super.clientSetname(name);
-	}
-
-	@Override
-	public String clientPause(long timeout) {
-		return super.clientPause(timeout);
-	}
-
-	@Override
-	public List<String> time() {
-		return super.time();
-	}
-
-	@Override
-	public String migrate(String host, int port, byte[] key, int destinationDb, int timeout) {
-		return super.migrate(host, port, key, destinationDb, timeout);
-	}
-
-	@Override
-	public String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys) {
-		return super.migrate(host, port, destinationDB, timeout, params, keys);
-	}
-
-	@Override
-	public Long waitReplicas(int replicas, long timeout) {
-		return super.waitReplicas(replicas, timeout);
-	}
-
-	@Override
-	public Long pfadd(byte[] key, byte[]... elements) {
-		return super.pfadd(key, elements);
-	}
-
-	@Override
-	public long pfcount(byte[] key) {
-		return super.pfcount(key);
 	}
 
 	@Override
@@ -2778,46 +2030,6 @@ public class CopyJedis extends Jedis {
 	@Override
 	public Long pfcount(byte[]... keys) {
 		return super.pfcount(keys);
-	}
-
-	@Override
-	public ScanResult<byte[]> scan(byte[] cursor) {
-		return super.scan(cursor);
-	}
-
-	@Override
-	public ScanResult<byte[]> scan(byte[] cursor, ScanParams params) {
-		return super.scan(cursor, params);
-	}
-
-	@Override
-	public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
-		return super.hscan(key, cursor);
-	}
-
-	@Override
-	public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params) {
-		return super.hscan(key, cursor, params);
-	}
-
-	@Override
-	public ScanResult<byte[]> sscan(byte[] key, byte[] cursor) {
-		return super.sscan(key, cursor);
-	}
-
-	@Override
-	public ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params) {
-		return super.sscan(key, cursor, params);
-	}
-
-	@Override
-	public ScanResult<Tuple> zscan(byte[] key, byte[] cursor) {
-		return super.zscan(key, cursor);
-	}
-
-	@Override
-	public ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params) {
-		return super.zscan(key, cursor, params);
 	}
 
 	@Override
@@ -2891,6 +2103,46 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
+	public Set<byte[]> keys(byte[] pattern) {
+		return super.keys(pattern);
+	}
+
+	@Override
+	public ScanResult<byte[]> scan(byte[] cursor, ScanParams params) {
+		return super.scan(cursor, params);
+	}
+
+	@Override
+	public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
+		return super.hscan(key, cursor);
+	}
+
+	@Override
+	public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params) {
+		return super.hscan(key, cursor, params);
+	}
+
+	@Override
+	public ScanResult<byte[]> sscan(byte[] key, byte[] cursor) {
+		return super.sscan(key, cursor);
+	}
+
+	@Override
+	public ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params) {
+		return super.sscan(key, cursor, params);
+	}
+
+	@Override
+	public ScanResult<Tuple> zscan(byte[] key, byte[] cursor) {
+		return super.zscan(key, cursor);
+	}
+
+	@Override
+	public ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params) {
+		return super.zscan(key, cursor, params);
+	}
+
+	@Override
 	public List<Long> bitfield(byte[] key, byte[]... arguments) {
 		return super.bitfield(key, arguments);
 	}
@@ -2903,16 +2155,6 @@ public class CopyJedis extends Jedis {
 	@Override
 	public Long hstrlen(byte[] key, byte[] field) {
 		return super.hstrlen(key, field);
-	}
-
-	@Override
-	public List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams) {
-		return super.xread(count, block, streams);
-	}
-
-	@Override
-	public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams) {
-		return super.xreadGroup(groupname, consumer, count, block, noAck, streams);
 	}
 
 	@Override
@@ -2933,6 +2175,11 @@ public class CopyJedis extends Jedis {
 	@Override
 	public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
 		return super.xrevrange(key, end, start, count);
+	}
+
+	@Override
+	public List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams) {
+		return super.xread(count, block, streams);
 	}
 
 	@Override
@@ -2961,6 +2208,11 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
+	public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck, Map<byte[], byte[]> streams) {
+		return super.xreadGroup(groupname, consumer, count, block, noAck, streams);
+	}
+
+	@Override
 	public Long xdel(byte[] key, byte[]... ids) {
 		return super.xdel(key, ids);
 	}
@@ -2981,28 +2233,13 @@ public class CopyJedis extends Jedis {
 	}
 
 	@Override
-	public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
-		return super.sendCommand(cmd, args);
+	public Long waitReplicas(byte[] key, int replicas, long timeout) {
+		return super.waitReplicas(key, replicas, timeout);
 	}
 
 	@Override
-	public StreamInfo xinfoStream(byte[] key) {
-		return super.xinfoStream(key);
-	}
-
-	@Override
-	public List<StreamGroupInfo> xinfoGroup(byte[] key) {
-		return super.xinfoGroup(key);
-	}
-
-	@Override
-	public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
-		return super.xinfoConsumers(key, group);
-	}
-
-	@Override
-	public Object sendCommand(ProtocolCommand cmd) {
-		return super.sendCommand(cmd);
+	public Object sendCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
+		return super.sendCommand(sampleKey, cmd, args);
 	}
 
 	@Override

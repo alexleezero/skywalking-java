@@ -3,7 +3,7 @@ package org.apache.skywalking.apm.plugin.jedis.pt;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
-import static net.bytebuddy.matcher.ElementMatchers.any;
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
 /**
  * @author lijian
@@ -14,10 +14,10 @@ public enum JedisMethodMatcher {
 
 
 	public ElementMatcher.Junction<MethodDescription> getJedisMethodMatcher() {
-		return any();
+		return named("set").or(named("lpush"));
 	}
 
 	public ElementMatcher.Junction<MethodDescription> getJedisClusterMethodMatcher() {
-		return any();
+		return named("set").or(named("lpush"));
 	}
 }

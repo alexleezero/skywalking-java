@@ -1,5 +1,6 @@
 package org.apache.skywalking.apm.plugin.jedis.pt.common;
 
+import org.apache.skywalking.apm.agent.core.context.ContextManager;
 import org.apache.skywalking.apm.agent.core.logging.api.ILog;
 import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
 import org.apache.skywalking.apm.plugin.cache.pt.commons.RedisTool;
@@ -36,6 +37,7 @@ public final class JedisTool {
 	private volatile static JedisPool SHADOW_JEDIS_POOL;
 	private volatile static JedisSentinelPool SHADOW_JEDIS_SENTINEL_POOL;
 	private volatile static JedisCluster SHADOW_JEDIS_CLUSTER;
+	public final static String DIRECT_INVOKE_KEY = "DIRECT_INVOKE";
 
 	public static JedisPool getShadowJedisPool() {
 		if (SHADOW_JEDIS_POOL == null) {
@@ -44,7 +46,12 @@ public final class JedisTool {
 					Set<RedisTool.RedisUrl> redisUrls = RedisToolManager.JEDIS_TOOL.getRedisUrls();
 					RedisTool.RedisUrl redisUrl = redisUrls.stream().findFirst().get();
 					JedisPoolConfig config = new JedisPoolConfig();
-					SHADOW_JEDIS_POOL = new JedisPool(config, redisUrl.getHost(), redisUrl.getPort(), 5000, SHADOW_DB_PASSWORD);
+
+					if (StringUtil.isEmpty(SHADOW_DB_PASSWORD)) {
+						SHADOW_JEDIS_POOL = new JedisPool(redisUrl.getHost(), redisUrl.getPort());
+					} else {
+						SHADOW_JEDIS_POOL = new JedisPool(config, redisUrl.getHost(), redisUrl.getPort(), 5000, SHADOW_DB_PASSWORD);
+					}
 				}
 			}
 		}
@@ -60,7 +67,11 @@ public final class JedisTool {
 					for (RedisTool.RedisUrl redisUrl : redisUrls) {
 						sentinels.add(redisUrl.getHost() + ":" + redisUrl.getPort());
 					}
-					SHADOW_JEDIS_SENTINEL_POOL = new JedisSentinelPool(SHADOW_DB_SENTINEL_MASTER_ID, sentinels, SHADOW_DB_PASSWORD);
+					if (StringUtil.isEmpty(SHADOW_DB_PASSWORD)) {
+						SHADOW_JEDIS_SENTINEL_POOL = new JedisSentinelPool(SHADOW_DB_SENTINEL_MASTER_ID, sentinels);
+					} else {
+						SHADOW_JEDIS_SENTINEL_POOL = new JedisSentinelPool(SHADOW_DB_SENTINEL_MASTER_ID, sentinels, SHADOW_DB_PASSWORD);
+					}
 				}
 			}
 		}
@@ -77,7 +88,11 @@ public final class JedisTool {
 						nodes.add(new HostAndPort(redisUrl.getHost(), redisUrl.getPort()));
 					}
 					JedisPoolConfig config = new JedisPoolConfig();
-					SHADOW_JEDIS_CLUSTER = new JedisCluster(nodes, 5000, 10000, 5, SHADOW_DB_PASSWORD, config);
+					if (StringUtil.isEmpty(SHADOW_DB_PASSWORD)) {
+						SHADOW_JEDIS_CLUSTER = new JedisCluster(nodes);
+					} else {
+						SHADOW_JEDIS_CLUSTER = new JedisCluster(nodes, 5000, 10000, 5, SHADOW_DB_PASSWORD, config);
+					}
 				}
 			}
 		}
@@ -158,6 +173,18 @@ public final class JedisTool {
 			LOGGER.error("jedis shadow db config item[conn mode] error: " + CONN_MODE);
 		}
 		return invokeResp;
+	}
+
+	public static void setDirectInvoke() {
+		ContextManager.getRuntimeContext().put(DIRECT_INVOKE_KEY, Boolean.TRUE.toString());
+	}
+
+	public static void clearDirectInvoke() {
+		ContextManager.getRuntimeContext().remove(DIRECT_INVOKE_KEY);
+	}
+
+	public static boolean isDirectInvoke() {
+		return Boolean.TRUE.toString().equals(ContextManager.getRuntimeContext().get(DIRECT_INVOKE_KEY));
 	}
 
 	public static class InvokeResp {

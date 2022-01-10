@@ -21,9 +21,12 @@ public class JedisClusterPTInterceptor implements InstanceMethodsAroundIntercept
 	public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, MethodInterceptResult result) throws Throwable {
 		if (PressureTestContext.isTest()) {
 			if (CACHE_SHADOW_MODE == CacheShadowMode.SHADOW_DB) {
-				JedisTool.InvokeResp invokeResp = JedisTool.executeByShadowDB(method, allArguments, argumentsTypes);
-				if (invokeResp.isSuccess()) {
-					result.defineReturnValue(invokeResp.getResponse());
+				if (!JedisTool.isDirectInvoke()) {
+					JedisTool.setDirectInvoke();
+					JedisTool.InvokeResp invokeResp = JedisTool.executeByShadowDB(method, allArguments, argumentsTypes);
+					if (invokeResp.isSuccess()) {
+						result.defineReturnValue(invokeResp.getResponse());
+					}
 				}
 			} else if (CACHE_SHADOW_MODE == CacheShadowMode.SHADOW_KEY) {
 				// judge the arguments, to convert the key to shadow key
@@ -37,11 +40,12 @@ public class JedisClusterPTInterceptor implements InstanceMethodsAroundIntercept
 
 	@Override
 	public Object afterMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Object ret) throws Throwable {
+		JedisTool.clearDirectInvoke();
 		return ret;
 	}
 
 	@Override
 	public void handleMethodException(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes, Throwable t) {
-
+		JedisTool.clearDirectInvoke();
 	}
 }
