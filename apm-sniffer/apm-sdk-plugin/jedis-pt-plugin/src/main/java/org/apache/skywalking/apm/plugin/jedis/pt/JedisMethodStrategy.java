@@ -2679,6 +2679,18 @@ public enum JedisMethodStrategy implements MethodStrategy {
 			allArguments[0] = RedisToolManager.JEDIS_TOOL.convertShadowKey(allArguments[0]);
 		}
 	},
+	WAIT_REPLICAS_1("waitReplicas", new Class[]{String.class, int.class, long.class}) {
+		@Override
+		public void doArguments(Object[] allArguments) {
+			allArguments[0] = RedisToolManager.JEDIS_TOOL.convertShadowKey(allArguments[0]);
+		}
+	},
+	WAIT_REPLICAS_2("waitReplicas", new Class[]{byte[].class, int.class, long.class}) {
+		@Override
+		public void doArguments(Object[] allArguments) {
+			allArguments[0] = RedisToolManager.JEDIS_TOOL.convertShadowKey(allArguments[0]);
+		}
+	},
 	;
 
 	private final String methodName;
